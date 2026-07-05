@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+{% block title %}Overview · CareerCoach FYP{% endblock %}
+{% block page_crumb %}FYP / OVERVIEW{% endblock %}
+{% block page_title %}Welcome back, {{ user.first_name|default:user.username }}{% endblock %}
+
+{% block extra_css %}
+.greeting { font-family: var(--display); font-size: 32px; font-weight: 600; letter-spacing: -.015em; line-height: 1.1; margin-bottom: 10px; }
+.greeting em { font-style: italic; color: var(--moss); }
+.hero-sub { color: var(--muted); font-size: 15px; max-width: 54ch; margin-bottom: 28px; }
+
+/* ── Feature cards ── */
+.feat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+@media (max-width: 700px) { .feat-grid { grid-template-columns: 1fr; } }
+.feat-card {
+  background: #fff; border: 1px solid var(--line); border-radius: var(--r);
+  padding: 24px; transition: .2s; position: relative; overflow: hidden;
+}
+.feat-card:hover { transform: translateY(-3px); box-shadow: var(--shadow); border-color: transparent; }
+.feat-icon { width: 44px; height: 44px; border-radius: 12px; display: grid; place-items: center; margin-bottom: 14px; }
+.feat-card h3 { font-family: var(--display); font-size: 17px; font-weight: 600; margin-bottom: 6px; }
+.feat-card p { font-size: 13px; color: var(--muted); line-height: 1.5; margin-bottom: 16px; }
+
+/* ── Top rec banner ── */
+.top-rec {
+  background: linear-gradient(135deg, var(--moss-deep) 0%, var(--moss) 100%);
+  border-radius: var(--r); padding: 24px 28px; color: #fff;
+  display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px;
+  margin-bottom: 32px; box-shadow: var(--shadow);
+}
+.top-rec .label { font-family: var(--mono); font-size: 10px; letter-spacing: .18em; color: #a9c6b8; text-transform: uppercase; margin-bottom: 4px; }
+.top-rec h3 { font-family: var(--display); font-size: 22px; font-weight: 600; margin: 0; text-transform: capitalize; }
+.top-rec .score { font-family: var(--display); font-size: 40px; font-weight: 600; line-height: 1; }
+.top-rec .score small { font-size: 16px; opacity: .7; }
+.top-rec-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+.trec-btn { padding: 9px 18px; border-radius: 10px; font-size: 13.5px; font-weight: 600; font-family: inherit; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; gap: 7px; border: none; transition: .16s; }
+.trec-btn-light { background: rgba(255,255,255,.18); color: #fff; border: 1px solid rgba(255,255,255,.3); }
+.trec-btn-light:hover { background: rgba(255,255,255,.28); color: #fff; }
+{% endblock %}
+
+{% block content %}
+
+{# ── Hero ── #}
+<div style="margin-bottom:32px">
+  {% if top_rec %}
+    <div class="greeting">Your top match is <em>{{ top_rec.career.title|capfirst }}.</em></div>
+    <p class="hero-sub">Here's where you stand today — your career matches, skill gaps, and the next steps on your roadmap.</p>
+  {% elif has_assessment %}
+    <div class="greeting">Assessment <em>complete.</em></div>
+    <p class="hero-sub">Your interests and skills are saved. Complete your background profile to unlock personalised career recommendations.</p>
+  {% else %}
+    <div class="greeting">Let's find <em>your path.</em></div>
+    <p class="hero-sub">Take the career assessment to discover your strengths, interests, and the roles that fit you best.</p>
+  {% endif %}
+</div>
+
+{# ── Top rec or prompts ── #}
+{% if top_rec %}
+<div class="top-rec">
+  <div>
+    <div class="label">Your top career match</div>
+    <h3>{{ top_rec.career.title }}</h3>
+    <span style="font-size:12px;color:#a9c6b8;font-family:var(--mono)">{{ top_rec.career.industry }}</span>
+  </div>
+  <div style="text-align:right">
+    <div class="score">{{ top_rec.final_score }}<small>%</small></div>
+    <div style="font-size:12px;color:#a9c6b8">overall match</div>
+  </div>
+  <div class="top-rec-actions">
+    <a href="/recommendations/" class="trec-btn trec-btn-light">All matches</a>
+    <a href="/roadmap/{{ top_rec.career.pk }}/" class="trec-btn" style="background:var(--gold);color:#fff">View roadmap</a>
+  </div>
+</div>
+{% elif not profile_complete %}
+<div class="a-alert warn" style="margin-bottom:32px">
+  <i class="bi bi-person-exclamation"></i>
+  <span>Complete your <a href="/accounts/profile/" style="color:inherit;font-weight:600;text-decoration:underline">background profile</a> (field of study &amp; experience) to unlock career recommendations.</span>
+</div>
+{% endif %}
+
+{# ── Feature cards ── #}
+<div class="sec-head">
+  <div><span class="eyebrow">What you can do</span><h2>Your career toolkit</h2></div>
+</div>
+<div class="feat-grid">
+  <div class="feat-card">
+    <div class="feat-icon" style="background:rgba(47,94,78,.1)">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--moss)" stroke-width="1.8"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/><path d="M9 12h6M9 16h4"/></svg>
+    </div>
+    <h3>{% if has_assessment %}Retake Assessment{% else %}Career Assessment{% endif %}</h3>
+    <p>{% if has_assessment %}Update your interests and skill ratings to refresh your career matches.{% else %}12-question interest quiz + skill rating to unlock your personalised career recommendations.{% endif %}</p>
+    <a href="{% if has_assessment %}/assessment/background/?retake=1{% else %}/assessment/background/{% endif %}" class="a-btn a-btn-green" style="font-size:13px;padding:8px 16px">
+      {% if has_assessment %}Retake quiz{% else %}Start now{% endif %}
+    </a>
+  </div>
+
+  <div class="feat-card">
+    <div class="feat-icon" style="background:rgba(63,125,82,.1)">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--good)" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3"/><circle cx="12" cy="12" r="3"/></svg>
+    </div>
+    <h3>Career Matches</h3>
+    <p>See your top career fits ranked by interest alignment, skill coverage, and academic background.</p>
+    {% if has_assessment and profile_complete %}
+      <a href="/recommendations/" class="a-btn a-btn-green" style="font-size:13px;padding:8px 16px">View matches</a>
+    {% else %}
+      <span class="a-btn a-btn-ghost" style="font-size:13px;padding:8px 16px;cursor:default;opacity:.6">Complete assessment first</span>
+    {% endif %}
+  </div>
+
+  <div class="feat-card">
+    <div class="feat-icon" style="background:rgba(199,154,58,.1)">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="1.8"><path d="M9 18l6-12M5 6h.01M19 18h.01"/><circle cx="6" cy="6" r="2"/><circle cx="18" cy="18" r="2"/></svg>
+    </div>
+    <h3>Learning Roadmap</h3>
+    <p>A sequenced weekly plan to close your skill gaps and reach your top career match.</p>
+    {% if top_rec %}
+      <a href="/roadmap/{{ top_rec.career.pk }}/" class="a-btn a-btn-green" style="font-size:13px;padding:8px 16px">View roadmap</a>
+    {% elif has_assessment %}
+      <a href="/recommendations/" class="a-btn a-btn-ghost" style="font-size:13px;padding:8px 16px">Pick a career first</a>
+    {% else %}
+      <span class="a-btn a-btn-ghost" style="font-size:13px;padding:8px 16px;cursor:default;opacity:.6">Complete assessment first</span>
+    {% endif %}
+  </div>
+</div>
+
+{% endblock %}

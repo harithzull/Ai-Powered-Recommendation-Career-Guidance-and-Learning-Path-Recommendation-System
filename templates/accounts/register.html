@@ -1,0 +1,35 @@
+{% extends "base_auth.html" %}
+{% block title %}Create Account · CareerCoach FYP{% endblock %}
+
+{% block content %}
+<h2>Create your account</h2>
+<p class="sub">Get personalised career recommendations in minutes.</p>
+
+<form method="post" novalidate>
+  {% csrf_token %}
+  {% for field in form %}
+    <div class="f-group">
+      <label class="f-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+      <input
+        class="f-input {% if field.errors %}err{% endif %}"
+        type="{{ field.field.widget.input_type }}"
+        name="{{ field.html_name }}"
+        id="{{ field.id_for_label }}"
+        autocomplete="{{ field.html_name }}"
+        {% if field.value %}value="{{ field.value }}"{% endif %}
+      />
+      {% if field.help_text %}
+        <div class="f-error" style="color:var(--muted)">{{ field.help_text }}</div>
+      {% endif %}
+      {% for error in field.errors %}
+        <div class="f-error">{{ error }}</div>
+      {% endfor %}
+    </div>
+  {% endfor %}
+  <button type="submit" class="auth-btn">Create Account</button>
+</form>
+{% endblock %}
+
+{% block auth_foot %}
+  Already have an account? <a href="/accounts/login/">Sign in</a>
+{% endblock %}

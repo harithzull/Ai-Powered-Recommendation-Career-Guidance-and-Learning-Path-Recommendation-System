@@ -1,0 +1,265 @@
+{% extends "base.html" %}
+{% block title %}Career Assessment – Interests (Step 2 of 3) – CareerCoach{% endblock %}
+{% block page_crumb %}FYP / ASSESSMENT{% endblock %}
+{% block page_title %}Career Assessment{% endblock %}
+
+{% block extra_css %}
+/* ── Mood-card grid ─────────────────────────────── */
+.mood-group { display: grid; grid-template-columns: repeat(5, 1fr); gap: .6rem; }
+@media (max-width: 575px) { .mood-group { gap: .35rem; } }
+.mood-radio { position: absolute; opacity: 0; width: 0; height: 0; }
+.mood-card {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: .3rem; padding: .65rem .4rem; border: 2px solid var(--line); border-radius: .75rem;
+  cursor: pointer; transition: border-color .15s, background .15s, transform .1s;
+  background: #fff; text-align: center; user-select: none;
+  -webkit-tap-highlight-color: transparent; min-height: 80px;
+}
+.mood-card:hover { border-color: var(--moss); background: rgba(47,94,78,.06); }
+.mood-card.selected {
+  border-color: var(--moss); background: rgba(47,94,78,.09);
+  transform: translateY(-2px); box-shadow: 0 4px 12px rgba(47,94,78,.18);
+}
+.mood-card .mood-icon { font-size: 1.1rem; line-height: 1; font-family: var(--mono); font-weight: 700; color: var(--ink); }
+.mood-card .mood-label { font-size: .68rem; font-weight: 600; color: var(--muted); line-height: 1.2; text-align: center; }
+.mood-card.selected .mood-label { color: var(--moss-deep); }
+
+.question-block { padding: 1.5rem 1.5rem 1rem; }
+.q-icon {
+  width: 2rem; height: 2rem; min-width: 2rem; border-radius: 50%;
+  background: rgba(47,94,78,.1); color: var(--moss);
+  font-size: .75rem; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+}
+
+@keyframes shake {
+  0%,100% { transform: translateX(0); }
+  20%,60% { transform: translateX(-6px); }
+  40%,80% { transform: translateX(6px); }
+}
+.shake { animation: shake .35s ease; }
+.q-warning { display: none; font-size: .85rem; color: var(--clay); margin-top: .75rem; }
+.q-warning.visible { display: block; }
+
+.step-badge {
+  width: 2rem; height: 2rem; border-radius: 50%; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: .85rem; font-weight: 700;
+}
+.step-badge.active { background: var(--moss); color: #fff; }
+.step-badge.done { background: var(--moss); color: #fff; }
+.step-badge.pending { background: var(--paper-2); color: var(--muted); border: 1px solid var(--line); font-weight: 400; }
+
+.wiz-track { flex: 1; height: 6px; border-radius: 3px; background: var(--paper-2); overflow: hidden; }
+.wiz-fill { height: 100%; border-radius: 3px; background: linear-gradient(90deg,var(--moss-deep),var(--moss)); transition: width .3s ease; }
+
+{% endblock %}
+
+{% block content %}
+<p style="color:var(--muted);font-size:14px;margin-bottom:24px">
+  Answer honestly — each response shapes which questions you see next, so this
+  adapts to you instead of asking a fixed list.
+</p>
+
+{# ── Step progress indicator ── #}
+<div class="d-flex align-items-center gap-3 mb-4">
+  <div class="d-flex align-items-center gap-2" style="color:var(--muted)">
+    <span class="step-badge done"><i class="bi bi-check-lg" style="font-size:.8rem"></i></span>
+    <span>Background</span>
+  </div>
+  <div style="width:48px;height:2px;background:var(--moss)"></div>
+  <div class="d-flex align-items-center gap-2">
+    <span class="step-badge active">2</span>
+    <span class="fw-semibold">Interests</span>
+  </div>
+  <div style="width:48px;height:2px;background:var(--line)"></div>
+  <div class="d-flex align-items-center gap-2" style="color:var(--muted)">
+    <span class="step-badge pending">3</span>
+    <span>Skills</span>
+  </div>
+</div>
+
+{# ── Global wizard progress bar ── #}
+<div class="d-flex align-items-center gap-2 mb-3">
+  <div class="wiz-track">
+    <div id="wizard-progress" class="wiz-fill" style="width:0%"></div>
+  </div>
+  <span style="color:var(--muted);font-size:.85rem;font-weight:600;white-space:nowrap;min-width:120px;text-align:right"
+        id="wizard-counter">Loading…</span>
+</div>
+
+<div class="a-panel mb-4" id="quiz-card" style="padding:0;overflow:hidden">
+  <div style="background:linear-gradient(135deg,var(--moss-deep),var(--moss));padding:1.1rem 1.5rem;color:#fff">
+    <h5 style="margin:0;font-family:var(--display);font-weight:600">
+      Career Preference Profile
+    </h5>
+    <small style="opacity:.75">Rate each statement to highlight the work activities and environments that fit you best.</small>
+  </div>
+
+  <div class="question-block" id="q-block">
+    <div style="font-family:var(--mono);font-size:.7rem;letter-spacing:.08em;font-weight:600;color:var(--muted);text-transform:uppercase;margin-bottom:.5rem"
+         id="q-counter">Question 1</div>
+
+    <div class="d-flex align-items-start gap-2 mb-3">
+      <span class="q-icon flex-shrink-0" id="q-num">1</span>
+      <p class="mb-0 fw-semibold lh-sm fs-6" id="q-text">…</p>
+    </div>
+
+    <div class="mood-group" role="radiogroup" id="mood-group">
+      {% for val, label in rating_options %}
+      <label class="mood-card" data-val="{{ val }}"
+             title="{{ label }}">
+        <span class="mood-icon" aria-hidden="true">{{ val }}</span>
+        <span class="mood-label">{% if val == 1 %}Strongly<br>Disagree{% elif val == 2 %}Disagree{% elif val == 3 %}Neutral{% elif val == 4 %}Agree{% else %}Strongly<br>Agree{% endif %}</span>
+      </label>
+      {% endfor %}
+    </div>
+
+    <p class="q-warning" id="q-warn">
+      <i class="bi bi-exclamation-circle me-1"></i>Please select an answer to continue.
+    </p>
+  </div>
+</div>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <button type="button" id="btn-back" class="a-btn a-btn-ghost" style="visibility:hidden">&larr; Back</button>
+  <button type="button" id="btn-next" class="a-btn a-btn-green">Next &rarr;</button>
+</div>
+
+{# Hidden form used to submit the collected answers at the end #}
+<form method="post" id="answers-form" style="display:none">
+  {% csrf_token %}
+  <input type="hidden" name="answers_json" id="answers_json" />
+</form>
+
+<script>
+(function () {
+  "use strict";
+
+  const NEXT_URL = "{% url 'assessment:next_question' %}";
+
+  function getCookie(name) {
+    const m = document.cookie.match("(^|;)\\s*" + name + "\\s*=\\s*([^;]+)");
+    return m ? m.pop() : "";
+  }
+  const csrftoken = getCookie("csrftoken");
+
+  // history: answers given so far, in order. stack: questions shown, in order.
+  let history = [];
+  let stack   = [];
+  let selected = null;     // rating chosen for the currently shown question
+
+  const qCounter = document.getElementById("q-counter");
+  const qNum     = document.getElementById("q-num");
+  const qText    = document.getElementById("q-text");
+  const moodGroup= document.getElementById("mood-group");
+  const warn     = document.getElementById("q-warn");
+  const btnBack  = document.getElementById("btn-back");
+  const btnNext  = document.getElementById("btn-next");
+  const wizBar   = document.getElementById("wizard-progress");
+  const wizLabel = document.getElementById("wizard-counter");
+  const cards    = Array.from(moodGroup.querySelectorAll(".mood-card"));
+
+  function clearSelection() {
+    cards.forEach(c => c.classList.remove("selected"));
+    selected = null;
+  }
+  function applySelection(val) {
+    cards.forEach(c => c.classList.toggle("selected", parseInt(c.dataset.val) === val));
+    selected = val;
+  }
+
+  function renderQuestion(q, answeredCount, target) {
+    qText.textContent = q.text;
+    const n = stack.length;              // 1-based position
+    qNum.textContent = n;
+    qCounter.textContent = "Question " + n;
+    const total = Math.max(target || 13, n);
+    const pct = Math.round(n / total * 100);
+    wizBar.style.width = pct + "%";
+    wizLabel.textContent = "Question " + n + " of ~" + total;
+    btnBack.style.visibility = (stack.length > 1) ? "visible" : "hidden";
+    warn.classList.remove("visible");
+    clearSelection();
+    // If this question was already answered (came back to it), restore choice.
+    const prior = history.find(h => h.id === q.id);
+    if (prior) applySelection(prior.rating);
+  }
+
+  function setLoading(on) {
+    btnNext.disabled = on;
+    btnNext.style.opacity = on ? ".6" : "1";
+  }
+
+  function fetchNext() {
+    setLoading(true);
+    fetch(NEXT_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "X-CSRFToken": csrftoken },
+      body: JSON.stringify({ history: history }),
+    })
+    .then(r => r.json())
+    .then(data => {
+      setLoading(false);
+      if (data.done) { submitAll(); return; }
+      stack.push(data.question);
+      renderQuestion(data.question, data.answered, data.target);
+      document.getElementById("quiz-card").scrollIntoView({ behavior: "smooth", block: "nearest" });
+    })
+    .catch(() => {
+      setLoading(false);
+      warn.textContent = "Something went wrong — please try again.";
+      warn.classList.add("visible");
+    });
+  }
+
+  function submitAll() {
+    document.getElementById("answers_json").value = JSON.stringify(history);
+    document.getElementById("answers-form").submit();
+  }
+
+  // ── Card selection ──
+  moodGroup.addEventListener("click", function (e) {
+    const card = e.target.closest(".mood-card");
+    if (!card) return;
+    applySelection(parseInt(card.dataset.val));
+    warn.classList.remove("visible");
+  });
+
+  // ── Next ──
+  btnNext.addEventListener("click", function () {
+    if (selected == null) {
+      warn.classList.add("visible");
+      const blk = document.getElementById("q-block");
+      blk.classList.add("shake");
+      setTimeout(() => blk.classList.remove("shake"), 400);
+      return;
+    }
+    const current = stack[stack.length - 1];
+    // Record / overwrite the answer for the current question, truncating any
+    // answers that came after it (matters when the user went Back then changed).
+    const idx = history.findIndex(h => h.id === current.id);
+    if (idx === -1) {
+      history.push({ id: current.id, rating: selected });
+    } else {
+      history[idx].rating = selected;
+      history = history.slice(0, idx + 1);
+      stack = stack.slice(0, idx + 1);   // re-derive forward from here
+    }
+    fetchNext();
+  });
+
+  // ── Back ──
+  btnBack.addEventListener("click", function () {
+    if (stack.length <= 1) return;
+    stack.pop();                          // drop current question
+    if (history.length) history.pop();    // drop its (or previous) answer
+    const prev = stack[stack.length - 1];
+    renderQuestion(prev, history.length, 13);
+  });
+
+  // ── Boot ──
+  fetchNext();
+})();
+</script>
+{% endblock %}

@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>{% block title %}CareerCoach FYP{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet" />
+  <style>
+    /* ── FYP design tokens ──────────────────────────────── */
+    :root {
+      --ink: #15201c;
+      --paper: #f3efe6;
+      --paper-2: #ece6d8;
+      --line: #d8cfbd;
+      --moss: #2f5e4e;
+      --moss-deep: #1e3f34;
+      --clay: #c25a3a;
+      --gold: #c79a3a;
+      --sky: #3f6f8f;
+      --muted: #6b6456;
+      --good: #3f7d52;
+      --r: 14px;
+      --shadow: 0 1px 2px rgba(30,30,20,.05), 0 12px 30px -16px rgba(30,40,30,.25);
+      --display: "Inter", system-ui, sans-serif;
+      --body: "Inter", system-ui, sans-serif;
+      --mono: "Inter", system-ui, sans-serif;
+    }
+
+    /* ── Reset body over Bootstrap ───────────────────────── */
+    body {
+      background: var(--paper) !important;
+      color: var(--ink) !important;
+      font-family: var(--body) !important;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+    ::selection { background: var(--moss); color: var(--paper); }
+    a { color: inherit; }
+
+    /* ── App shell ───────────────────────────────────────── */
+    .app { display: grid; grid-template-columns: 240px 1fr; min-height: 100vh; }
+
+    /* ── Sidebar ─────────────────────────────────────────── */
+    .side {
+      background: var(--moss-deep);
+      color: #e9e3d4;
+      padding: 26px 18px;
+      display: flex; flex-direction: column; gap: 6px;
+      position: sticky; top: 0; height: 100vh; overflow-y: auto;
+    }
+    .brand { display: flex; align-items: center; gap: 11px; margin-bottom: 30px; padding: 0 6px; }
+    .brand .mark { width: 34px; height: 34px; flex: 0 0 34px; }
+    .brand .bname { font-family: var(--display); font-size: 21px; font-weight: 600; letter-spacing: -.01em; color: #fff; }
+    .brand .bname small { display: block; font-family: var(--mono); font-size: 9.5px; letter-spacing: .22em; color: #8fae9f; font-weight: 400; margin-top: 1px; }
+    .nav-lbl { font-family: var(--mono); font-size: 9.5px; letter-spacing: .2em; color: #6f917f; padding: 14px 12px 6px; text-transform: uppercase; }
+    .nav-item {
+      display: flex; align-items: center; gap: 12px;
+      padding: 10px 12px; border-radius: 10px;
+      color: #c5d3c9; font-size: 14px; font-weight: 500;
+      transition: background .18s, color .18s; position: relative;
+      text-decoration: none;
+    }
+    .nav-item svg { width: 18px; height: 18px; flex: 0 0 18px; opacity: .85; }
+    .nav-item:hover { background: rgba(255,255,255,.05); color: #fff; }
+    .nav-item.active { background: rgba(199,154,58,.16); color: #fff; }
+    .nav-item.active::before {
+      content: ""; position: absolute; left: -18px; top: 8px; bottom: 8px;
+      width: 3px; background: var(--gold); border-radius: 0 3px 3px 0;
+    }
+    .side-foot {
+      margin-top: auto; display: flex; align-items: center; gap: 11px;
+      padding: 12px; border-top: 1px solid rgba(255,255,255,.08);
+    }
+    .s-avatar {
+      width: 34px; height: 34px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--clay), var(--gold));
+      display: grid; place-items: center;
+      font-family: var(--display); font-weight: 600; color: #fff; font-size: 15px; flex: 0 0 34px;
+    }
+    .side-foot .smeta { font-size: 13px; line-height: 1.3; min-width: 0; flex: 1; }
+    .side-foot .smeta b { color: #fff; font-weight: 600; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .side-foot .smeta span { color: #8fae9f; font-size: 11px; }
+    .logout-btn {
+      flex: 0 0 auto; width: 30px; height: 30px; border-radius: 8px;
+      display: grid; place-items: center; color: #c5d3c9; background: transparent;
+      border: none; cursor: pointer; transition: .16s;
+    }
+    .logout-btn:hover { background: rgba(255,255,255,.08); color: #fff; }
+    .logout-btn svg { width: 16px; height: 16px; }
+
+    /* ── Logout confirm modal ─────────────────────────────── */
+    .logout-overlay {
+      display: none; position: fixed; inset: 0; background: rgba(20,25,20,.45);
+      z-index: 100; align-items: center; justify-content: center;
+    }
+    .logout-overlay.open { display: flex; }
+    .logout-modal {
+      background: #fff; border-radius: var(--r); padding: 26px 28px; max-width: 320px;
+      box-shadow: var(--shadow); text-align: center;
+    }
+    .logout-modal h5 { font-family: var(--display); font-size: 17px; font-weight: 600; margin: 0 0 8px; }
+    .logout-modal p { font-size: 13.5px; color: var(--muted); margin: 0 0 20px; line-height: 1.5; }
+    .logout-modal .lm-actions { display: flex; gap: 10px; justify-content: center; }
+
+    /* ── Main area ───────────────────────────────────────── */
+    .main { padding-bottom: 60px; min-width: 0; }
+    .topbar {
+      position: sticky; top: 0; z-index: 20;
+      background: color-mix(in srgb, var(--paper) 88%, transparent);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--line);
+      padding: 16px 40px; display: flex; align-items: center; justify-content: space-between;
+    }
+    .topbar h1 { font-family: var(--display); font-size: 19px; font-weight: 600; letter-spacing: -.01em; margin: 0; }
+    .topbar .tcrumb { font-family: var(--mono); font-size: 10px; letter-spacing: .16em; color: var(--muted); text-transform: uppercase; margin-bottom: 2px; }
+    .top-actions { display: flex; gap: 10px; align-items: center; }
+    .icon-btn {
+      width: 38px; height: 38px; border-radius: 10px; border: 1px solid var(--line);
+      background: var(--paper-2); display: grid; place-items: center; transition: .16s; cursor: pointer;
+    }
+    .icon-btn:hover { border-color: var(--moss); background: #fff; }
+    .icon-btn svg { width: 18px; height: 18px; }
+    .pill-btn {
+      display: flex; align-items: center; gap: 8px;
+      padding: 9px 16px; border-radius: 10px; background: var(--moss);
+      color: #fff; font-weight: 600; font-size: 13.5px; transition: .16s;
+      border: none; font-family: inherit; text-decoration: none;
+    }
+    .pill-btn:hover { background: var(--moss-deep); color: #fff; transform: translateY(-1px); }
+    .pill-btn svg { width: 16px; height: 16px; }
+
+    .wrap { max-width: 1080px; padding: 34px 40px; }
+
+    /* ── FYP alert (over Bootstrap alerts) ─────────────── */
+    .a-alert {
+      padding: 14px 18px; border-radius: var(--r); font-size: 14px;
+      display: flex; align-items: center; gap: 12px; margin-bottom: 20px; border: 1px solid;
+    }
+    .a-alert.warn  { background: #fdf4e3; border-color: #e8c87a; color: #7a5a1a; }
+    .a-alert.info  { background: #e8f2ec; border-color: #9fceb0; color: #2a5e3f; }
+    .a-alert.ok    { background: #e8f2ec; border-color: var(--good); color: var(--moss-deep); }
+    .a-alert.err   { background: #fdf0ed; border-color: #e8a89c; color: #7a2a1a; }
+    .a-alert i.bi  { font-size: 17px; flex: 0 0 auto; }
+
+    /* ── Section headings ────────────────────────────────── */
+    .sec-head { display: flex; align-items: baseline; justify-content: space-between; margin: 6px 0 16px; }
+    .sec-head h2 { font-family: var(--display); font-size: 21px; font-weight: 600; letter-spacing: -.01em; margin: 0; }
+    .eyebrow { font-family: var(--mono); font-size: 10px; letter-spacing: .18em; color: var(--clay); text-transform: uppercase; display: block; margin-bottom: 4px; }
+    .sec-link { font-size: 13px; color: var(--moss); font-weight: 600; text-decoration: none; }
+
+    /* ── FYP panel / card ──────────────────────────────── */
+    .a-panel { background: #fff; border: 1px solid var(--line); border-radius: var(--r); padding: 24px; margin-bottom: 24px; }
+
+    /* ── FYP buttons (use alongside Bootstrap .btn) ────── */
+    .a-btn {
+      display: inline-flex; align-items: center; gap: 7px;
+      padding: 9px 20px; border-radius: 10px; font-size: 14px; font-weight: 600;
+      transition: .16s; cursor: pointer; font-family: inherit; border: none; text-decoration: none;
+    }
+    .a-btn-green  { background: var(--moss); color: #fff; }
+    .a-btn-green:hover { background: var(--moss-deep); color: #fff; transform: translateY(-1px); }
+    .a-btn-ghost  { background: var(--paper-2); color: var(--ink); border: 1px solid var(--line); }
+    .a-btn-ghost:hover { border-color: var(--moss); background: #fff; color: var(--ink); }
+
+    /* ── Responsive ──────────────────────────────────────── */
+    @media (max-width: 900px) {
+      .app { grid-template-columns: 1fr; }
+      .side { position: fixed; left: -260px; z-index: 50; transition: .25s; box-shadow: 0 0 40px rgba(0,0,0,.3); height: 100%; }
+      .side.open { left: 0; }
+      .wrap, .topbar { padding-left: 20px; padding-right: 20px; }
+      .menu-toggle { display: grid !important; }
+    }
+    .menu-toggle { display: none; }
+
+    {% block extra_css %}{% endblock %}
+  </style>
+  {% block extra_head %}{% endblock %}
+</head>
+<body>
+<div class="app">
+
+  <!-- ── Sidebar ── -->
+  <aside class="side" id="side">
+    <div class="brand">
+      <svg class="mark" viewBox="0 0 40 40" fill="none">
+        <circle cx="20" cy="20" r="18" stroke="#c79a3a" stroke-width="1.4" opacity=".5"/>
+        <path d="M20 6 L20 34 M6 20 L34 20" stroke="#8fae9f" stroke-width="1" opacity=".4"/>
+        <circle cx="20" cy="20" r="4.5" fill="#c79a3a"/>
+        <circle cx="29" cy="13" r="2.4" fill="#fff"/>
+        <circle cx="13" cy="27" r="1.8" fill="#fff" opacity=".7"/>
+        <path d="M20 20 L29 13 M20 20 L13 27" stroke="#fff" stroke-width="1" opacity=".5"/>
+      </svg>
+      <div class="bname">CareerCoach<small>FYP&nbsp;PROJECT</small></div>
+    </div>
+
+    {% with app=request.resolver_match.app_name %}
+    <div class="nav-lbl">Navigate</div>
+    <a class="nav-item {% if app == 'dashboard' %}active{% endif %}" href="/dashboard/">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 12l9-9 9 9M5 10v10h14V10"/></svg>
+      Overview
+    </a>
+    <a class="nav-item {% if app == 'assessment' %}active{% endif %}" href="/assessment/background/">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2M9 12h6M9 16h4"/></svg>
+      Assessment
+    </a>
+    <a class="nav-item {% if app == 'recommender' %}active{% endif %}" href="/recommendations/">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="9"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3"/><circle cx="12" cy="12" r="3"/></svg>
+      Career Matches
+    </a>
+    <a class="nav-item {% if app == 'roadmap' %}active{% endif %}" href="{{ top_roadmap_url|default:'/recommendations/' }}">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M9 18l6-12M5 6h.01M19 18h.01"/><circle cx="6" cy="6" r="2"/><circle cx="18" cy="18" r="2"/></svg>
+      Learning Path
+    </a>
+    <a class="nav-item {% if app == 'accounts' %}active{% endif %}" href="/accounts/profile/">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>
+      My Profile
+    </a>
+
+    <div class="nav-lbl">Talk it through</div>
+    <a class="nav-item {% if app == 'chatbot' %}active{% endif %}" href="/chat/">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 5h16v11H8l-4 4z"/></svg>
+      Coach Chat
+    </a>
+    {% endwith %}
+
+    <div class="side-foot">
+      <div class="s-avatar">{{ user.username|first|upper }}</div>
+      <div class="smeta">
+        <b>{{ user.get_full_name|default:user.username }}</b>
+        <span>CareerCoach</span>
+      </div>
+      <button type="button" class="logout-btn" title="Log out" onclick="document.getElementById('logout-overlay').classList.add('open')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/></svg>
+      </button>
+    </div>
+  </aside>
+
+  <!-- ── Logout confirm modal ── -->
+  <div class="logout-overlay" id="logout-overlay">
+    <div class="logout-modal">
+      <h5>Log out?</h5>
+      <p>You'll need to sign in again to access your dashboard.</p>
+      <div class="lm-actions">
+        <button type="button" class="a-btn a-btn-ghost" onclick="document.getElementById('logout-overlay').classList.remove('open')">Cancel</button>
+        <form method="post" action="/accounts/logout/">
+          {% csrf_token %}
+          <button type="submit" class="a-btn a-btn-green">Log out</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Main ── -->
+  <main class="main">
+    <div class="topbar">
+      <div>
+        <div class="tcrumb">{% block page_crumb %}FYP{% endblock %}</div>
+        <h1>{% block page_title %}Dashboard{% endblock %}</h1>
+      </div>
+      <div class="top-actions">
+        <button class="icon-btn menu-toggle" id="menu-toggle" aria-label="Menu">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+        </button>
+        <a href="/chat/" class="pill-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 5h16v11H8l-4 4z"/></svg>
+          Ask the coach
+        </a>
+      </div>
+    </div>
+
+    <div class="wrap">
+      {% for message in messages %}
+        <div class="a-alert {% if 'error' in message.tags %}err{% elif 'warning' in message.tags %}warn{% elif 'success' in message.tags %}ok{% else %}info{% endif %}">
+          <i class="bi bi-{% if 'error' in message.tags %}exclamation-circle{% elif 'warning' in message.tags %}exclamation-triangle{% elif 'success' in message.tags %}check-circle{% else %}info-circle{% endif %}"></i>
+          <span>{{ message }}</span>
+        </div>
+      {% endfor %}
+
+      {% block content %}{% endblock %}
+    </div>
+  </main>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+(function () {
+  var side = document.getElementById('side');
+  var toggle = document.getElementById('menu-toggle');
+
+  if (toggle) {
+    toggle.addEventListener('click', function (e) {
+      e.stopPropagation();           // don't let the document handler see this
+      side.classList.toggle('open');
+    });
+  }
+
+  document.addEventListener('click', function (e) {
+    if (side && side.classList.contains('open')
+        && !side.contains(e.target)
+        && e.target !== toggle && !toggle.contains(e.target)) {
+      side.classList.remove('open');
+    }
+  });
+})();
+</script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>

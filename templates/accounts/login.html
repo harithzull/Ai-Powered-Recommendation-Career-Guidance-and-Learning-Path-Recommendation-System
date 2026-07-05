@@ -1,0 +1,35 @@
+  {% extends "base_auth.html" %}
+{% block title %}Sign In · CareerCoach FYP{% endblock %}
+
+{% block content %}
+<h2>Welcome back</h2>
+<p class="sub">Sign in to continue to your career dashboard.</p>
+
+{% if form.non_field_errors %}
+  <div class="a-alert-auth">
+    <i class="bi bi-exclamation-circle"></i>
+    <span>{{ form.non_field_errors|join:" " }}</span>
+  </div>
+{% endif %}
+
+<form method="post" novalidate>
+  {% csrf_token %}
+  <div class="f-group">
+    <label class="f-label" for="id_username">Username</label>
+    <input class="f-input {% if form.username.errors %}err{% endif %}"
+           type="text" name="username" id="id_username" autofocus autocomplete="username" />
+    {% for e in form.username.errors %}<div class="f-error">{{ e }}</div>{% endfor %}
+  </div>
+  <div class="f-group">
+    <label class="f-label" for="id_password">Password</label>
+    <input class="f-input {% if form.password.errors %}err{% endif %}"
+           type="password" name="password" id="id_password" autocomplete="current-password" />
+    {% for e in form.password.errors %}<div class="f-error">{{ e }}</div>{% endfor %}
+  </div>
+  <button type="submit" class="auth-btn">Sign In</button>
+</form>
+{% endblock %}
+
+{% block auth_foot %}
+  Don't have an account? <a href="/accounts/register/">Create one</a>
+{% endblock %}

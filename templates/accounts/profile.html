@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block title %}My Profile · CareerCoach FYP{% endblock %}
+{% block page_crumb %}FYP / MY PROFILE{% endblock %}
+{% block page_title %}My profile{% endblock %}
+
+{% block extra_css %}
+.profile-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; max-width: 680px; }
+@media (max-width: 600px) { .profile-grid { grid-template-columns: 1fr; } }
+
+.p-field { margin-bottom: 22px; }
+.p-label { display: block; font-size: 13px; font-weight: 600; color: var(--ink); margin-bottom: 7px; }
+.p-select {
+  width: 100%; padding: 11px 14px; border: 1.5px solid var(--line);
+  border-radius: 10px; font-size: 14px; font-family: var(--body);
+  background: var(--paper); color: var(--ink); outline: none;
+  transition: border-color .15s; cursor: pointer; appearance: auto;
+}
+.p-select:focus { border-color: var(--moss); background: #fff; }
+.p-error { font-size: 12px; color: var(--clay); margin-top: 5px; }
+.p-hint { font-size: 12px; color: var(--muted); margin-top: 5px; }
+{% endblock %}
+
+{% block content %}
+<div style="max-width:680px">
+  <p style="color:var(--muted);font-size:14px;margin-bottom:28px">
+    Used to personalise your career recommendations. Only needs to be set once.
+  </p>
+
+  <div class="a-panel">
+    <form method="post" novalidate>
+      {% csrf_token %}
+      {% if next %}<input type="hidden" name="next" value="{{ next }}">{% endif %}
+
+      <div class="profile-grid">
+        {% for field in form %}
+        <div class="p-field">
+          <label class="p-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+          <select class="p-select {% if field.errors %}is-invalid{% endif %}"
+                  name="{{ field.html_name }}" id="{{ field.id_for_label }}">
+            {% for val, label in field.field.choices %}
+              <option value="{{ val }}" {% if field.value == val %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+          </select>
+          {% if field.help_text %}<div class="p-hint">{{ field.help_text }}</div>{% endif %}
+          {% for error in field.errors %}<div class="p-error">{{ error }}</div>{% endfor %}
+        </div>
+        {% endfor %}
+      </div>
+
+      <button type="submit" class="a-btn a-btn-green">Save profile</button>
+    </form>
+  </div>
+</div>
+{% endblock %}

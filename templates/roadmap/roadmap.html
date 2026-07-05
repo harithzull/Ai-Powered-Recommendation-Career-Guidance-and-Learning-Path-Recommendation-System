@@ -1,0 +1,222 @@
+{% extends "base.html" %}
+{% block title %}{{ roadmap_title }} · FYP{% endblock %}
+{% block page_crumb %}FYP / LEARNING PATH{% endblock %}
+{% block page_title %}{{ roadmap_title }}{% endblock %}
+
+{% block extra_css %}
+.road-meta { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; margin-bottom:20px; }
+.road-badge { font-family:var(--mono); font-size:10px; letter-spacing:.14em; padding:5px 12px; border-radius:99px; background:var(--paper-2); color:var(--muted); text-transform:uppercase; border:1px solid var(--line); }
+.road-pct   { font-family:var(--display); font-size:22px; font-weight:600; color:var(--moss-deep); }
+
+.prog-bar  { height:7px; border-radius:99px; background:var(--paper-2); margin-bottom:28px; overflow:hidden; }
+.prog-fill { height:100%; border-radius:99px; background:linear-gradient(90deg,var(--moss-deep),var(--moss)); transition:width 1s ease; }
+
+.overview-box { background:var(--paper-2); border-radius:var(--r); padding:16px 20px; margin-bottom:28px; border-left:3px solid var(--moss); }
+.overview-box p { margin:0; font-size:13.5px; color:var(--ink); line-height:1.65; }
+
+.road { position:relative; padding-left:8px; }
+.road::before {
+  content:""; position:absolute; left:19px; top:20px; bottom:20px;
+  width:2px; background:linear-gradient(var(--moss), var(--line));
+}
+.stop { display:grid; grid-template-columns:40px 1fr; gap:16px; margin-bottom:10px; position:relative; }
+.node {
+  width:40px; height:40px; border-radius:12px;
+  background:var(--paper-2); border:1px solid var(--line);
+  display:grid; place-items:center;
+  font-family:var(--display); font-weight:600; color:var(--moss); z-index:2; font-size:15px;
+  flex:0 0 40px;
+}
+.stop.done .node { background:var(--moss); color:#fff; border-color:var(--moss); }
+
+.stop-body { background:#fff; border:1px solid var(--line); border-radius:12px; padding:16px 20px; margin-bottom:12px; transition:.18s; }
+.stop.done .stop-body { background:#f0f7f3; border-color:#b2d9c0; }
+
+.stop-header { display:flex; align-items:flex-start; gap:14px; }
+.stop-check { flex:0 0 auto; margin-top:3px; }
+.stop-check input[type=checkbox] { width:18px; height:18px; accent-color:var(--moss); cursor:pointer; }
+.stop-main { flex:1; min-width:0; }
+
+.stop-tags { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:8px; align-items:center; }
+.tag { font-family:var(--mono); font-size:10px; letter-spacing:.08em; padding:3px 9px; border-radius:6px; font-weight:600; text-transform:uppercase; }
+.done-badge { font-family:var(--mono); font-size:10px; padding:3px 8px; border-radius:6px; background:var(--moss); color:#fff; white-space:nowrap; }
+
+.stop-title { font-family:var(--display); font-size:15px; font-weight:600; margin:0 0 6px; }
+.stop.done .stop-title { text-decoration:line-through; color:var(--muted); }
+
+.stop-desc { font-size:13.5px; color:var(--ink); line-height:1.6; margin:0 0 12px; }
+
+.detail-box { background:var(--paper-2); border-radius:8px; padding:10px 12px; }
+.detail-label { font-family:var(--mono); font-size:9px; letter-spacing:.14em; text-transform:uppercase; color:var(--muted); margin-bottom:3px; }
+.detail-val { font-size:12.5px; color:var(--ink); line-height:1.45; }
+
+.why-box { background:#fffde7; border-left:3px solid #f0c040; border-radius:0 8px 8px 0; padding:8px 12px; margin-top:10px; }
+.why-box .detail-label { color:#a07800; }
+.why-box .detail-val { font-size:12.5px; color:#5a4400; }
+
+.road-actions { display:flex; gap:10px; justify-content:space-between; margin-top:8px; flex-wrap:wrap; }
+
+.resources-row { display:flex; flex-wrap:wrap; align-items:center; gap:6px; margin-top:10px; }
+.res-link { display:inline-flex; align-items:center; gap:4px; font-size:11px; font-family:var(--mono); font-weight:600; padding:4px 10px; border-radius:6px; text-decoration:none; transition:.15s; border:1px solid transparent; }
+.res-link:hover { opacity:.85; text-decoration:none; }
+.res-yt  { background:#fff0f0; color:#cc0000; border-color:#f5c0c0; }
+.res-fcc { background:#fff8ee; color:#b45309; border-color:#fcd9a0; }
+.res-co  { background:#eef4ff; color:#1a56db; border-color:#bfcfff; }
+
+.reeval-banner { background:linear-gradient(135deg,var(--moss-deep),var(--moss)); border-radius:var(--r); padding:20px 24px; margin-top:28px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; }
+.reeval-banner p { margin:0; color:#fff; font-size:13.5px; line-height:1.5; }
+.reeval-banner p strong { display:block; font-family:var(--display); font-size:15px; margin-bottom:2px; }
+
+.career-about { background:var(--paper-2); border-radius:var(--r); padding:20px 24px; margin-top:28px; }
+.career-about h6 { font-family:var(--mono); font-size:10px; letter-spacing:.18em; color:var(--clay); text-transform:uppercase; margin-bottom:8px; }
+.career-about p { font-size:13.5px; color:var(--muted); line-height:1.6; margin:0; }
+{% endblock %}
+
+{% block content %}
+{% if progress_pct == 100 %}
+<div class="a-alert ok" style="margin-bottom:24px">
+  <i class="bi bi-trophy-fill"></i>
+  <span><strong>Roadmap complete!</strong> You've finished every step for the {{ career.title }} career path. Great work.</span>
+</div>
+{% endif %}
+
+<div class="road-meta">
+  <div style="display:flex;gap:8px;flex-wrap:wrap">
+    <span class="road-badge">{{ career.industry }}</span>
+    {% if career.work_environment %}<span class="road-badge">{{ career.work_environment }}</span>{% endif %}
+  </div>
+  <div style="text-align:right">
+    <div class="road-pct">{{ done }}/{{ total }} steps</div>
+    <div style="font-size:12px;color:var(--muted)">{{ progress_pct }}% complete</div>
+  </div>
+</div>
+
+<div class="prog-bar">
+  <div class="prog-fill" style="width:{{ progress_pct }}%"></div>
+</div>
+
+{% if overview %}
+<div class="overview-box">
+  <p>{{ overview }}</p>
+</div>
+{% endif %}
+
+<form method="post" id="road-form">
+  {% csrf_token %}
+  <div class="road">
+    {% for item in steps_ctx %}
+    {% with s=item.step %}
+    <div class="stop {% if item.done %}done{% endif %}">
+      <div class="node">
+        {% if item.done %}<i class="bi bi-check-lg" style="font-size:.85rem"></i>{% else %}{{ forloop.counter }}{% endif %}
+      </div>
+      <div class="stop-body">
+        <div class="stop-header">
+          <div class="stop-check">
+            <input type="checkbox" name="step_{{ s.index }}" id="step_{{ s.index }}"
+                   {% if item.done %}checked{% endif %} />
+          </div>
+          <div class="stop-main">
+
+            <div class="stop-tags">
+              <span class="tag" style="background:{{ s.phase_bg }};color:{{ s.phase_color }}">{{ s.phase }}</span>
+              <span class="tag" style="background:{{ s.difficulty_bg }};color:{{ s.difficulty_color }}">{{ s.difficulty }}</span>
+              {% if s.estimated_time %}
+              <span class="tag" style="background:var(--paper-2);color:var(--muted)">
+                <i class="bi bi-clock" style="margin-right:3px"></i>{{ s.estimated_time }}
+              </span>
+              {% endif %}
+              {% if item.done %}<span class="done-badge">Done ✓</span>{% endif %}
+            </div>
+
+            <h4 class="stop-title">{{ s.title }}</h4>
+
+            {% if s.description %}
+            <p class="stop-desc">{{ s.description }}</p>
+            {% endif %}
+
+            {% if s.deliverable %}
+            <div class="detail-box" style="margin-bottom:8px">
+              <div class="detail-label"><i class="bi bi-check2-square me-1"></i>Deliverable</div>
+              <div class="detail-val">{{ s.deliverable }}</div>
+            </div>
+            {% endif %}
+
+            {% if s.why_it_matters %}
+            <div class="why-box">
+              <div class="detail-label">💡 Why it matters</div>
+              <div class="detail-val">{{ s.why_it_matters }}</div>
+            </div>
+            {% endif %}
+
+            {% if s.search_keywords %}
+            <div class="resources-row">
+              <span class="detail-label" style="font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-right:8px">Free resources</span>
+              <a href="https://www.youtube.com/results?search_query={{ s.search_keywords|urlencode }}+free+tutorial" target="_blank" rel="noopener" class="res-link res-yt">
+                <i class="bi bi-youtube"></i> YouTube
+              </a>
+              <a href="https://www.freecodecamp.org/news/search/?query={{ s.search_keywords|urlencode }}" target="_blank" rel="noopener" class="res-link res-fcc">
+                <i class="bi bi-fire"></i> freeCodeCamp
+              </a>
+              <a href="https://www.coursera.org/search?query={{ s.search_keywords|urlencode }}&price=Free" target="_blank" rel="noopener" class="res-link res-co">
+                <i class="bi bi-mortarboard"></i> Coursera (free)
+              </a>
+            </div>
+            {% endif %}
+
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endwith %}
+    {% endfor %}
+  </div>
+
+  <div class="road-actions">
+    <a href="/recommendations/" class="a-btn a-btn-ghost">← Back to matches</a>
+    <button type="submit" class="a-btn a-btn-green">Save progress</button>
+  </div>
+</form>
+
+<div class="reeval-banner">
+  <p>
+    <strong>Finished some steps? Re-evaluate your skills.</strong>
+    Update your skill ratings to see if your career match scores have improved.
+  </p>
+  <a href="/assessment/skills/" class="a-btn" style="background:#fff;color:var(--moss-deep);border-color:#fff;white-space:nowrap">
+    <i class="bi bi-arrow-repeat me-1"></i>Re-evaluate skills
+  </a>
+</div>
+
+{% if career.summary %}
+<div class="career-about">
+  <h6>About this career</h6>
+  <p>{{ career.summary }}</p>
+</div>
+{% endif %}
+
+<script>
+document.querySelectorAll('.stop-check input').forEach(function(cb) {
+  cb.addEventListener('change', function() {
+    var stop = this.closest('.stop');
+    stop.classList.toggle('done', this.checked);
+    var node = stop.querySelector('.node');
+    var badge = stop.querySelector('.done-badge');
+    if (this.checked) {
+      node.innerHTML = '<i class="bi bi-check-lg" style="font-size:.85rem"></i>';
+      if (!badge) {
+        var tagsEl = stop.querySelector('.stop-tags');
+        var b = document.createElement('span');
+        b.className = 'done-badge';
+        b.textContent = 'Done ✓';
+        tagsEl.appendChild(b);
+      }
+    } else {
+      var stepNum = parseInt(this.name.replace('step_', '')) + 1;
+      node.textContent = stepNum;
+      if (badge) badge.remove();
+    }
+  });
+});
+</script>
+{% endblock %}

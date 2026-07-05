@@ -1,0 +1,332 @@
+{% extends "base.html" %}
+{% block title %}Career Assessment – Skills (Step 3 of 3) – CareerCoach{% endblock %}
+{% block page_crumb %}FYP / ASSESSMENT{% endblock %}
+{% block page_title %}Career Assessment{% endblock %}
+
+{% block extra_css %}
+/* ── Search dropdown ─────────────────────────────── */
+.skill-search-wrapper { position: relative; }
+#skill-search-input { border-color: var(--moss); }
+#skill-search-input:focus { box-shadow: 0 0 0 .2rem rgba(47,94,78,.18); border-color: var(--moss); }
+#skill-dropdown {
+  position: absolute; top: 100%; left: 0; right: 0; z-index: 100;
+  background: #fff; border: 1px solid var(--line); border-top: none;
+  border-radius: 0 0 .5rem .5rem;
+  box-shadow: 0 4px 12px rgba(0,0,0,.1);
+  max-height: 260px; overflow-y: auto;
+}
+.skill-dropdown-item { padding: .5rem .85rem; cursor: pointer; font-size: .9rem; transition: background .1s; }
+.skill-dropdown-item:hover, .skill-dropdown-item.focused {
+  background: rgba(47,94,78,.08); color: var(--moss-deep);
+}
+.skill-dropdown-empty { padding: .5rem .85rem; color: var(--muted); font-size: .85rem; font-style: italic; }
+
+/* ── Skill chips ─────────────────────────────────── */
+.skill-chip {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 6px 14px; border-radius: 99px; font-family: var(--body);
+  font-size: 13px; font-weight: 500; line-height: 1.2;
+  border: 1.5px solid var(--line); background: #fff; color: var(--ink);
+  cursor: pointer; transition: border-color .13s, background .13s, color .13s;
+  white-space: nowrap;
+}
+.skill-chip.chip-off:hover { border-color: var(--moss); color: var(--moss-deep); background: rgba(47,94,78,.05); }
+.skill-chip.chip-on { background: var(--moss); border-color: var(--moss); color: #fff; }
+.skill-chip.chip-on:hover { background: var(--moss-deep); border-color: var(--moss-deep); }
+.chip-custom-tag { font-size: .6rem; font-family: var(--mono); letter-spacing: .04em; text-transform: uppercase; opacity: .65; }
+
+/* ── Rating select ───────────────────────────────── */
+.chip-rating {
+  padding: 5px 10px; border-radius: 8px; font-size: 12px; font-family: var(--body);
+  border: 1.5px solid var(--line); background: var(--paper); color: var(--ink);
+  cursor: pointer; outline: none; transition: border-color .13s;
+}
+.chip-rating:focus { border-color: var(--moss); background: #fff; }
+
+/* ── Step badges ─────────────────────────────────── */
+.step-badge {
+  width: 2rem; height: 2rem; border-radius: 50%; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: .85rem; font-weight: 700;
+}
+.step-badge.done { background: var(--moss); color: #fff; }
+.step-badge.active { background: var(--moss); color: #fff; }
+{% endblock %}
+
+{% block content %}
+<p style="color:var(--muted);font-size:14px;margin-bottom:24px">Select the skills you have and rate your level.</p>
+
+{# ── Step progress indicator ── #}
+<div class="d-flex align-items-center gap-3 mb-4">
+  <div class="d-flex align-items-center gap-2" style="color:var(--muted)">
+    <span class="step-badge done"><i class="bi bi-check-lg" style="font-size:.8rem"></i></span>
+    <span>Background</span>
+  </div>
+  <div style="width:48px;height:2px;background:var(--moss)"></div>
+  <div class="d-flex align-items-center gap-2" style="color:var(--muted)">
+    <span class="step-badge done"><i class="bi bi-check-lg" style="font-size:.8rem"></i></span>
+    <span>Interests</span>
+  </div>
+  <div style="width:48px;height:2px;background:var(--moss)"></div>
+  <div class="d-flex align-items-center gap-2">
+    <span class="step-badge active">3</span>
+    <span class="fw-semibold">Skills</span>
+  </div>
+</div>
+
+<form method="post" novalidate id="skills-form">
+  {% csrf_token %}
+
+  {# ── Suggested skill pills ── #}
+  <div class="a-panel mb-4" style="padding:0;overflow:hidden">
+    <div style="background:linear-gradient(135deg,var(--moss-deep),var(--moss));padding:1.1rem 1.5rem;color:#fff">
+      <h5 style="margin:0;font-family:var(--display);font-weight:600">
+        Your Suggested Skills
+        <span style="font-weight:400;opacity:.75;font-size:.85em">({{ pill_count }} suggestions based on your interests)</span>
+      </h5>
+      <small style="opacity:.75">Tap a pill to select it, then rate your level or search any skills that are not suggested</small>
+    </div>
+
+    <div style="padding:1.25rem 1.5rem">
+      {# Pills rendered by JS on load #}
+      <div id="pills-container" class="mb-3">
+        <p class="text-muted small fst-italic">Loading suggestions…</p>
+      </div>
+
+      {# ── Skill search ── #}
+      <div class="mt-3 pt-3" style="border-top:1px solid var(--line)">
+        <label style="display:block;font-size:13px;font-weight:600;color:var(--ink);margin-bottom:7px">
+          <i class="bi bi-search me-1"></i>Search &amp; add any skill from the database
+        </label>
+        <div class="skill-search-wrapper" style="max-width:360px">
+          <input type="text" id="skill-search-input"
+                 class="form-control form-control-sm"
+                 placeholder="Type at least 2 characters…"
+                 autocomplete="off" />
+          <div id="skill-dropdown" style="display:none"></div>
+        </div>
+        <div style="font-size:12px;color:var(--muted);margin-top:5px">Results come from the full skills database — click one to add it as a rated pill.</div>
+      </div>
+
+      {# Hidden JSON — JS writes selected ratings here before submit #}
+      <input type="hidden" id="rated_skills_json" name="rated_skills_json" value="{}" />
+    </div>
+  </div>
+
+  <div class="d-flex gap-2 mb-4 justify-content-between">
+    <a href="/assessment/interests/" class="a-btn a-btn-ghost">
+      &larr; Back to Interests
+    </a>
+    <button type="submit" class="a-btn a-btn-green">
+      <i class="bi bi-check-circle me-1"></i>Save &amp; Get Recommendations
+    </button>
+  </div>
+</form>
+
+{# ── Data islands ── #}
+<script id="suggested-skills-data" type="application/json">{{ suggested_skills_json|safe }}</script>
+<script id="initial-ratings-data"  type="application/json">{{ initial_ratings_json|safe }}</script>
+
+<script>
+(function () {
+  "use strict";
+
+  // ── Server data ────────────────────────────────────────────────────────────
+  const suggested      = JSON.parse(document.getElementById("suggested-skills-data").textContent);
+  const initialRatings = JSON.parse(document.getElementById("initial-ratings-data").textContent);
+  const SEARCH_URL     = "{% url 'assessment:skill_search' %}";
+
+  // ── Mutable state ──────────────────────────────────────────────────────────
+  const selectedRatings = Object.assign({}, initialRatings);
+  const suggestedSet    = new Set(suggested);
+  const customSkills    = Object.keys(initialRatings).filter(n => !suggestedSet.has(n));
+
+  // ── Render ─────────────────────────────────────────────────────────────────
+  const LABELS = { 1:"Beginner", 2:"Basic", 3:"Intermediate", 4:"Proficient", 5:"Expert" };
+
+  function renderPills() {
+    const container = document.getElementById("pills-container");
+    const all = [...suggested, ...customSkills.filter(n => !suggestedSet.has(n))];
+
+    if (all.length === 0) {
+      container.innerHTML = '<p class="text-muted small fst-italic">No suggestions — search for skills below.</p>';
+      syncHidden();
+      return;
+    }
+
+    const html = all.map(skill => {
+      const rating   = selectedRatings[skill] || 0;
+      const sel      = rating > 0;
+      const isCustom = !suggestedSet.has(skill);
+      const chipCls    = sel ? "chip-on" : "chip-off";
+      const hideRating = sel ? "" : "d-none";
+
+      const opts = [1,2,3,4,5].map(v =>
+        `<option value="${v}"${rating === v ? " selected" : ""}>${v} – ${LABELS[v]}</option>`
+      ).join("");
+
+      return `
+<div class="pill-wrapper d-inline-flex flex-column align-items-start me-2 mb-2">
+  <button type="button"
+    class="skill-chip pill-btn ${chipCls}"
+    data-skill="${esc(skill)}"
+    title="${esc(skill)}"
+  >${esc(trunc(skill, 28))}${isCustom
+    ? ' <span class="chip-custom-tag">custom</span>'
+    : ""}</button>
+  <div class="mt-1 ${hideRating}">
+    <select class="chip-rating pill-rating"
+            data-skill="${esc(skill)}"
+            style="min-width:140px">
+      <option value="" disabled${!rating ? " selected" : ""}>Rate your level…</option>
+      ${opts}
+    </select>
+  </div>
+</div>`;
+    }).join("");
+
+    container.innerHTML = `<div class="d-flex flex-wrap">${html}</div>`;
+    syncHidden();
+  }
+
+  // ── Toggle / rate ──────────────────────────────────────────────────────────
+  function togglePill(skill) {
+    if (selectedRatings[skill]) {
+      delete selectedRatings[skill];
+    } else {
+      selectedRatings[skill] = 3;
+    }
+    renderPills();
+  }
+
+  function setRating(skill, val) {
+    const r = parseInt(val, 10);
+    if (skill && r >= 1 && r <= 5) {
+      selectedRatings[skill] = r;
+      syncHidden();
+    }
+  }
+
+  // ── Add a skill (shared by search results and direct-add) ─────────────────
+  function addSkill(name) {
+    name = name.trim();
+    if (!name) return;
+    if (suggestedSet.has(name)) {
+      if (!selectedRatings[name]) { selectedRatings[name] = 3; }
+    } else if (!customSkills.includes(name)) {
+      customSkills.push(name);
+      selectedRatings[name] = 3;
+    }
+    renderPills();
+  }
+
+  // ── Event delegation on pill container ────────────────────────────────────
+  const container = document.getElementById("pills-container");
+
+  container.addEventListener("click", function (e) {
+    const btn = e.target.closest(".pill-btn");
+    if (btn) togglePill(btn.dataset.skill);
+  });
+
+  container.addEventListener("change", function (e) {
+    const sel = e.target.closest(".pill-rating");
+    if (sel) setRating(sel.dataset.skill, sel.value);
+  });
+
+  // ── Skill search ───────────────────────────────────────────────────────────
+  const searchInput = document.getElementById("skill-search-input");
+  const dropdown    = document.getElementById("skill-dropdown");
+  let debounceTimer = null;
+  let focusedIndex  = -1;
+  let currentResults = [];
+
+  function showDropdown(names) {
+    currentResults = names;
+    focusedIndex = -1;
+    if (names.length === 0) {
+      dropdown.innerHTML = '<div class="skill-dropdown-empty">No matches found</div>';
+    } else {
+      dropdown.innerHTML = names.map((n, i) =>
+        `<div class="skill-dropdown-item" data-index="${i}">${esc(n)}</div>`
+      ).join("");
+    }
+    dropdown.style.display = "block";
+  }
+
+  function hideDropdown() {
+    dropdown.style.display = "none";
+    currentResults = [];
+    focusedIndex = -1;
+  }
+
+  function moveFocus(delta) {
+    const items = dropdown.querySelectorAll(".skill-dropdown-item");
+    if (!items.length) return;
+    items[focusedIndex]?.classList.remove("focused");
+    focusedIndex = Math.max(0, Math.min(items.length - 1, focusedIndex + delta));
+    items[focusedIndex].classList.add("focused");
+    items[focusedIndex].scrollIntoView({ block: "nearest" });
+  }
+
+  searchInput.addEventListener("input", function () {
+    clearTimeout(debounceTimer);
+    const q = searchInput.value.trim();
+    if (q.length < 2) { hideDropdown(); return; }
+    debounceTimer = setTimeout(function () {
+      fetch(SEARCH_URL + "?q=" + encodeURIComponent(q))
+        .then(function (r) { return r.json(); })
+        .then(function (data) { showDropdown(data.results); })
+        .catch(function () { hideDropdown(); });
+    }, 250);
+  });
+
+  searchInput.addEventListener("keydown", function (e) {
+    if (dropdown.style.display === "none") return;
+    if (e.key === "ArrowDown")  { e.preventDefault(); moveFocus(1); }
+    if (e.key === "ArrowUp")    { e.preventDefault(); moveFocus(-1); }
+    if (e.key === "Escape")     { hideDropdown(); }
+    if (e.key === "Enter") {
+      e.preventDefault();
+      const items = dropdown.querySelectorAll(".skill-dropdown-item");
+      if (focusedIndex >= 0 && items[focusedIndex]) {
+        addSkill(currentResults[focusedIndex]);
+        searchInput.value = "";
+        hideDropdown();
+      }
+    }
+  });
+
+  dropdown.addEventListener("mousedown", function (e) {
+    const item = e.target.closest(".skill-dropdown-item");
+    if (!item) return;
+    e.preventDefault();   // keep input focus
+    addSkill(currentResults[parseInt(item.dataset.index, 10)]);
+    searchInput.value = "";
+    hideDropdown();
+  });
+
+  document.addEventListener("click", function (e) {
+    if (!searchInput.contains(e.target) && !dropdown.contains(e.target)) {
+      hideDropdown();
+    }
+  });
+
+  // ── Sync hidden field ──────────────────────────────────────────────────────
+  function syncHidden() {
+    document.getElementById("rated_skills_json").value = JSON.stringify(selectedRatings);
+  }
+
+  // ── Helpers ────────────────────────────────────────────────────────────────
+  function esc(s) {
+    return String(s)
+      .replace(/&/g, "&amp;").replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+  }
+  function trunc(s, n) { return s.length > n ? s.slice(0, n - 1) + "…" : s; }
+
+  // ── Boot ───────────────────────────────────────────────────────────────────
+  renderPills();
+
+})();
+</script>
+{% endblock %}

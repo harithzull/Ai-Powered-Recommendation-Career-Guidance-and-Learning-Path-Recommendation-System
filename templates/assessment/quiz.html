@@ -1,0 +1,291 @@
+{% extends "base.html" %}
+{% block title %}Career Assessment – CareerCoach{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+  <h2 class="fw-bold">Career Assessment</h2>
+  <p class="text-muted">Complete all three sections and click <strong>Submit</strong> at the bottom.</p>
+</div>
+
+{% if errors %}
+<div class="alert alert-danger">
+  <strong>Please fix the following before submitting:</strong>
+  <ul class="mb-0 mt-1">{% for e in errors %}<li>{{ e }}</li>{% endfor %}</ul>
+</div>
+{% endif %}
+
+<form method="post" novalidate id="quiz-form">
+  {% csrf_token %}
+
+  {# ═══════════════════════════════════════════════════════════════
+     PART 1 — RIASEC Interest Questions
+  ═══════════════════════════════════════════════════════════════ #}
+  <div class="card shadow-sm border-0 mb-4">
+    <div class="card-header bg-primary text-white py-3">
+      <h5 class="mb-0 fw-bold">Part 1 — Interest Profile <span class="fw-normal opacity-75">(12 questions)</span></h5>
+      <small class="opacity-75">Rate each statement: 1 = Strongly Disagree &rarr; 5 = Strongly Agree.</small>
+    </div>
+    <div class="card-body p-0">
+      {% for item in questions_ctx %}
+      <div class="px-4 py-3 {% if not forloop.last %}border-bottom{% endif %}">
+        <p class="mb-2 fw-semibold">{{ forloop.counter }}. {{ item.q.text }}</p>
+        <div class="d-flex flex-wrap gap-3">
+          {% for opt in item.options %}
+          <div class="form-check">
+            <input class="form-check-input" type="radio"
+                   name="riasec_{{ item.q.id }}"
+                   id="r{{ item.q.id }}_{{ opt.val }}"
+                   value="{{ opt.val }}"
+                   {% if opt.checked %}checked{% endif %} />
+            <label class="form-check-label small" for="r{{ item.q.id }}_{{ opt.val }}">{{ opt.label }}</label>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  {# ═══════════════════════════════════════════════════════════════
+     PART 2 — Adaptive Skill Pills
+  ═══════════════════════════════════════════════════════════════ #}
+  <div class="card shadow-sm border-0 mb-4">
+    <div class="card-header bg-success text-white py-3">
+      <h5 class="mb-0 fw-bold">Part 2 — Skills Self-Assessment</h5>
+      <small class="opacity-75">
+        Suggested skills update as you answer Part 1. Tap a skill to select it, then rate your level.
+        Use the box below to add skills not in the list.
+      </small>
+    </div>
+    <div class="card-body">
+
+      {# Suggested pills container — filled by JS #}
+      <div id="pills-container" class="mb-3">
+        <p class="text-muted small fst-italic">Answer Part 1 above to see suggested skills.</p>
+      </div>
+
+      {# Custom skill add-row #}
+      <div class="d-flex gap-2 align-items-center mt-2">
+        <input type="text" id="custom-skill-input" class="form-control form-control-sm"
+               placeholder="Add a skill not listed above…" style="max-width:280px"
+               onkeydown="if(event.key==='Enter'){event.preventDefault();addCustomSkill();}" />
+        <button type="button" class="btn btn-sm btn-outline-success" onclick="addCustomSkill()">
+          <i class="bi bi-plus-lg me-1"></i>Add
+        </button>
+      </div>
+      <div class="form-text mt-1">Press Enter or click Add to add a custom skill as a pill.</div>
+
+      {# Hidden input — JS serialises selected ratings here before submit #}
+      <input type="hidden" id="rated_skills_json" name="rated_skills_json" value="{}" />
+    </div>
+  </div>
+
+  {# ═══════════════════════════════════════════════════════════════
+     PART 3 — Additional Free-Text Skills
+     (always present — unrated escape hatch for the semantic matcher)
+  ═══════════════════════════════════════════════════════════════ #}
+  <div class="card shadow-sm border-0 mb-4">
+    <div class="card-header bg-warning py-3">
+      <h5 class="mb-0 fw-bold">Part 3 — Extra Skills <span class="fw-normal">(optional)</span></h5>
+      <small>Any other skills, comma-separated, that you'd like the matcher to consider.</small>
+    </div>
+    <div class="card-body">
+      <label class="form-label fw-semibold" for="free_text_skills">Additional skills</label>
+      <textarea class="form-control" id="free_text_skills" name="free_text_skills" rows="2"
+                placeholder="e.g. AutoCAD, Photoshop, Public Speaking">{{ free_text }}</textarea>
+      <div class="form-text">These are included in your match without a rating.</div>
+    </div>
+  </div>
+
+  <div class="d-grid mb-4">
+    <button type="submit" class="btn btn-primary btn-lg">
+      <i class="bi bi-check-circle me-2"></i>Submit Assessment
+    </button>
+  </div>
+</form>
+
+{# ── JSON data islands for JS ─────────────────────────────────────────────── #}
+<script id="skills-by-type-data" type="application/json">{{ skills_by_type_json|safe }}</script>
+<script id="question-types-data" type="application/json">{{ question_types_json|safe }}</script>
+<script id="initial-ratings-data" type="application/json">{{ initial_ratings_json|safe }}</script>
+
+<script>
+(function () {
+  "use strict";
+
+  // ── Load server data ────────────────────────────────────────────────────
+  const skillsByType   = JSON.parse(document.getElementById("skills-by-type-data").textContent);
+  const questionTypes  = JSON.parse(document.getElementById("question-types-data").textContent);
+  const initialRatings = JSON.parse(document.getElementById("initial-ratings-data").textContent);
+
+  // ── State ───────────────────────────────────────────────────────────────
+  // selectedRatings: {skill_name: 1-5}  — persists across pill re-renders
+  const selectedRatings = Object.assign({}, initialRatings);
+  // customSkills: [skill_name, ...]     — user-typed pills
+  const customSkills = [];
+  // Pre-seed customSkills from initialRatings that aren't in any suggested set
+  const allSuggestedSkills = new Set(Object.values(skillsByType).flat());
+  for (const name of Object.keys(initialRatings)) {
+    if (!allSuggestedSkills.has(name)) customSkills.push(name);
+  }
+
+  // ── RIASEC score computation ─────────────────────────────────────────────
+  function getRiasecScores() {
+    const scores = { R: 0, I: 0, A: 0, S: 0, E: 0, C: 0 };
+    for (const [qId, qType] of Object.entries(questionTypes)) {
+      const el = document.querySelector(`input[name="riasec_${qId}"]:checked`);
+      if (el) scores[qType] += parseInt(el.value, 10);
+    }
+    return scores;
+  }
+
+  function getTopTypes(scores, n = 3) {
+    return Object.entries(scores)
+      .filter(([, s]) => s > 0)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, n)
+      .map(([t]) => t);
+  }
+
+  function getSuggestedSkills(topTypes, max = 15) {
+    const seen = new Set();
+    const out  = [];
+    for (const t of topTypes) {
+      for (const s of (skillsByType[t] || [])) {
+        if (!seen.has(s)) { seen.add(s); out.push(s); }
+        if (out.length >= max) return out;
+      }
+    }
+    return out;
+  }
+
+  // ── Pill rendering ───────────────────────────────────────────────────────
+  function renderPills(suggestedSkills) {
+    const container = document.getElementById("pills-container");
+
+    // Merge: suggested pills first, then custom ones not already in suggested
+    const suggestedSet = new Set(suggestedSkills);
+    const allPills = [
+      ...suggestedSkills,
+      ...customSkills.filter(s => !suggestedSet.has(s)),
+    ];
+
+    if (allPills.length === 0) {
+      container.innerHTML =
+        '<p class="text-muted small fst-italic">Answer Part 1 above to see suggested skills.</p>';
+      syncHidden();
+      return;
+    }
+
+    const html = allPills.map(skill => {
+      const rating     = selectedRatings[skill] || 0;
+      const isSelected = rating > 0;
+      const isCustom   = !suggestedSet.has(skill);
+
+      return `
+        <div class="pill-wrapper d-inline-flex flex-column align-items-center me-2 mb-2"
+             style="vertical-align:top" data-skill="${esc(skill)}">
+          <button type="button"
+            class="btn btn-sm rounded-pill pill-btn ${isSelected ? "btn-primary" : "btn-outline-secondary"}"
+            title="${esc(skill)}"
+            onclick="togglePill(${JSON.stringify(skill)})"
+          >${esc(truncate(skill, 24))}${isCustom ? ' <span class="badge bg-light text-secondary ms-1" style="font-size:.6rem">custom</span>' : ""}</button>
+          <div class="rating-row mt-1 ${isSelected ? "" : "d-none"}" id="rating-${cssId(skill)}">
+            <select class="form-select form-select-sm"
+                    style="width:auto;min-width:120px"
+                    onchange="setRating(${JSON.stringify(skill)}, this.value)">
+              <option value="" disabled ${!rating ? "selected" : ""}>Rate…</option>
+              ${[1,2,3,4,5].map(v =>
+                `<option value="${v}" ${rating === v ? "selected" : ""}>${v} – ${LABELS[v]}</option>`
+              ).join("")}
+            </select>
+          </div>
+        </div>`;
+    }).join("");
+
+    container.innerHTML = `<div class="d-flex flex-wrap">${html}</div>`;
+    syncHidden();
+  }
+
+  const LABELS = { 1:"Beginner", 2:"Basic", 3:"Intermediate", 4:"Proficient", 5:"Expert" };
+
+  // ── Pill interactions ────────────────────────────────────────────────────
+  window.togglePill = function (skill) {
+    if (selectedRatings[skill]) {
+      delete selectedRatings[skill];
+    } else {
+      selectedRatings[skill] = 3;   // default to Intermediate
+    }
+    // Re-render to flip button style — fast because DOM is small
+    const scores     = getRiasecScores();
+    const topTypes   = getTopTypes(scores);
+    const suggested  = getSuggestedSkills(topTypes);
+    renderPills(suggested);
+  };
+
+  window.setRating = function (skill, val) {
+    if (val) selectedRatings[skill] = parseInt(val, 10);
+    syncHidden();
+  };
+
+  // ── Custom skill add ─────────────────────────────────────────────────────
+  window.addCustomSkill = function () {
+    const input = document.getElementById("custom-skill-input");
+    const raw   = input.value.trim();
+    if (!raw) return;
+
+    // Support comma-separated batch entry
+    const names = raw.split(",").map(s => s.trim()).filter(Boolean);
+    let added = false;
+    for (const name of names) {
+      if (!selectedRatings.hasOwnProperty(name) && !customSkills.includes(name)) {
+        customSkills.push(name);
+        selectedRatings[name] = 3;
+        added = true;
+      }
+    }
+    input.value = "";
+    if (added) {
+      const scores    = getRiasecScores();
+      const topTypes  = getTopTypes(scores);
+      const suggested = getSuggestedSkills(topTypes);
+      renderPills(suggested);
+    }
+  };
+
+  // ── Sync hidden JSON field ───────────────────────────────────────────────
+  function syncHidden() {
+    document.getElementById("rated_skills_json").value =
+      JSON.stringify(selectedRatings);
+  }
+
+  // ── Update pills when Part 1 changes ────────────────────────────────────
+  function updatePills() {
+    const scores    = getRiasecScores();
+    const topTypes  = getTopTypes(scores);
+    const suggested = getSuggestedSkills(topTypes);
+    renderPills(suggested);
+  }
+
+  document.querySelectorAll('input[type="radio"][name^="riasec_"]')
+    .forEach(el => el.addEventListener("change", updatePills));
+
+  // ── Helpers ──────────────────────────────────────────────────────────────
+  function esc(str) {
+    return String(str)
+      .replace(/&/g,"&amp;").replace(/</g,"&lt;")
+      .replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+  }
+  function truncate(str, n) {
+    return str.length > n ? str.slice(0, n - 1) + "…" : str;
+  }
+  function cssId(str) {
+    // Safe CSS id from skill name
+    return str.replace(/[^a-zA-Z0-9]/g, "_");
+  }
+
+  // ── Boot ─────────────────────────────────────────────────────────────────
+  updatePills();  // uses pre-checked RIASEC radios if retaking
+})();
+</script>
+{% endblock %}
