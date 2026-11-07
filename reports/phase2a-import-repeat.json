@@ -1,0 +1,31 @@
+{
+  "dry_run": false,
+  "source_version": null,
+  "counts": {
+    "careers": {
+      "inserted": 0,
+      "updated": 0,
+      "skipped": 240,
+      "rejected": 0
+    },
+    "skills": {
+      "inserted": 0,
+      "updated": 0,
+      "skipped": 4358,
+      "rejected": 0
+    },
+    "relationships": {
+      "inserted": 0,
+      "updated": 0,
+      "skipped": 15727,
+      "rejected": 0
+    }
+  },
+  "errors": [],
+  "warnings": [
+    "Existing canonical/display/scoring fields and enrichment are preserved.",
+    "No missing-from-file records, user assessments, roadmaps, or progress are deleted.",
+    "Legacy source version and identifiers remain unknown unless explicitly supplied."
+  ],
+  "embedding_rebuild_required": false
+}

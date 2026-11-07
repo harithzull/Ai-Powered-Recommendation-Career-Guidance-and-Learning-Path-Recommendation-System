@@ -63,13 +63,32 @@ and keep it consistent with the vectors. Rebuilding vectors also requires the mo
 python manage.py build_skill_vectors
 ```
 
-Replacing an existing catalog requires `python manage.py import_data --replace-existing`.
-**Back up first: replacement deletes saved roadmaps and progress through foreign-key
-cascades.** Input files are checked before deletion, and the operation is atomic.
-It also clears recommendation caches. Admin catalog edits invalidate recommendations.
-Direct database/bulk changes outside these entry points require explicit cache
-invalidation and vector regeneration where applicable. Restart workers after replacing
-vector files, which are loaded once per process.
+Phase 2A imports are atomic, repeatable upserts that preserve existing IDs, scoring
+fields, curated enrichment, assessments, roadmaps, and progress. Nothing absent from
+a file is deleted. The old destructive `--replace-existing` option is rejected.
+
+```powershell
+python manage.py audit_career_data
+python manage.py audit_career_data --format json --output reports/career_data_audit.json
+python manage.py import_data --dry-run
+python manage.py import_data
+python manage.py seed_career_enrichment --dry-run
+python manage.py seed_career_enrichment
+python manage.py audit_career_data --database
+```
+
+Existing rows receive source snapshots/provenance; their canonical/display/scoring
+fields are not overwritten. New rows use incoming legacy fields for compatibility.
+Changed imports invalidate derived recommendation caches. Canonical skill additions
+require new embeddings; alias-only changes do not. No embeddings were rebuilt in
+Phase 2A. Admin catalog edits still invalidate recommendations. Direct database/bulk
+changes require explicit invalidation; restart workers after replacing vector files.
+
+See [the knowledge-base guide](docs/phase2a-knowledge-base.md) for source/enrichment
+separation, safe refreshes, alias review, local terminology, and audit limitations.
+This application uses an adapted ESCO-derived subset; the extraction version and
+original ESCO identifiers are unknown. Attribution and official sources are documented
+in that guide and acknowledged in the application footer.
 
 ## Tests and checks
 

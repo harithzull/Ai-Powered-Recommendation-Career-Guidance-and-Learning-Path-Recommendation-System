@@ -1,0 +1,440 @@
+{
+  "schema_version": 1,
+  "input_kind": "database",
+  "counts": {
+    "careers": 240,
+    "skills": 4358,
+    "relationships": 15727,
+    "enrichments": 28,
+    "aliases": 2
+  },
+  "statistics": {
+    "career_source_taxonomies": {
+      "esco": 240
+    },
+    "skill_source_taxonomies": {
+      "esco": 4358
+    },
+    "unknown_source_relationship_types": 15727,
+    "unknown_source_importance": 15727,
+    "unknown_source_proficiency": 15727
+  },
+  "finding_counts": {
+    "error": 0,
+    "review": 0,
+    "optional": 212,
+    "unknown": 9196
+  },
+  "findings": [
+    {
+      "code": "missing_source_identifier",
+      "category": "unknown",
+      "table": "careers",
+      "count": 240,
+      "records": [
+        {
+          "id": 513,
+          "title": "EU funds manager"
+        },
+        {
+          "id": 608,
+          "title": "Freinet school teacher"
+        },
+        {
+          "id": 531,
+          "title": "ICT intelligent systems designer"
+        },
+        {
+          "id": 601,
+          "title": "ICT network administrator"
+        },
+        {
+          "id": 694,
+          "title": "ICT network architect"
+        },
+        {
+          "id": 679,
+          "title": "ICT network engineer"
+        },
+        {
+          "id": 581,
+          "title": "ICT research consultant"
+        },
+        {
+          "id": 483,
+          "title": "ICT security administrator"
+        },
+        {
+          "id": 493,
+          "title": "ICT security engineer"
+        },
+        {
+          "id": 591,
+          "title": "ICT security manager"
+        },
+        {
+          "id": 626,
+          "title": "ICT system administrator"
+        },
+        {
+          "id": 632,
+          "title": "ICT system analyst"
+        },
+        {
+          "id": 695,
+          "title": "ICT system architect"
+        },
+        {
+          "id": 494,
+          "title": "ICT teacher secondary school"
+        },
+        {
+          "id": 589,
+          "title": "Montessori school teacher"
+        },
+        {
+          "id": 706,
+          "title": "accountant"
+        },
+        {
+          "id": 484,
+          "title": "accounting manager"
+        },
+        {
+          "id": 533,
+          "title": "advanced nurse practitioner"
+        },
+        {
+          "id": 554,
+          "title": "advertising manager"
+        },
+        {
+          "id": 634,
+          "title": "alternative fuels engineer"
+        }
+      ],
+      "examples_truncated": true,
+      "suggested_action": "Recover only with authoritative evidence; leave unknown meanwhile."
+    },
+    {
+      "code": "unknown_source_version",
+      "category": "unknown",
+      "table": "careers",
+      "count": 240,
+      "records": [
+        {
+          "id": 513
+        },
+        {
+          "id": 608
+        },
+        {
+          "id": 531
+        },
+        {
+          "id": 601
+        },
+        {
+          "id": 694
+        },
+        {
+          "id": 679
+        },
+        {
+          "id": 581
+        },
+        {
+          "id": 483
+        },
+        {
+          "id": 493
+        },
+        {
+          "id": 591
+        },
+        {
+          "id": 626
+        },
+        {
+          "id": 632
+        },
+        {
+          "id": 695
+        },
+        {
+          "id": 494
+        },
+        {
+          "id": 589
+        },
+        {
+          "id": 706
+        },
+        {
+          "id": 484
+        },
+        {
+          "id": 533
+        },
+        {
+          "id": 554
+        },
+        {
+          "id": 634
+        }
+      ],
+      "examples_truncated": true,
+      "suggested_action": "Record verified original extraction version if recovered."
+    },
+    {
+      "code": "missing_source_identifier",
+      "category": "unknown",
+      "table": "skills",
+      "count": 4358,
+      "records": [
+        {
+          "id": 12153,
+          "name": "3D modelling"
+        },
+        {
+          "id": 10344,
+          "name": "ABAP"
+        },
+        {
+          "id": 13016,
+          "name": "ABBYY FineReader"
+        },
+        {
+          "id": 10329,
+          "name": "AJAX"
+        },
+        {
+          "id": 10321,
+          "name": "APL"
+        },
+        {
+          "id": 10320,
+          "name": "ASP.NET"
+        },
+        {
+          "id": 12965,
+          "name": "Absorb (learning management systems)"
+        },
+        {
+          "id": 13256,
+          "name": "Adobe Illustrator"
+        },
+        {
+          "id": 13255,
+          "name": "Adobe Photoshop"
+        },
+        {
+          "id": 13268,
+          "name": "Agile development"
+        },
+        {
+          "id": 10297,
+          "name": "Agile project management"
+        },
+        {
+          "id": 9870,
+          "name": "Aircrack (penetration testing tool)"
+        },
+        {
+          "id": 13074,
+          "name": "Ajax Framework"
+        },
+        {
+          "id": 12416,
+          "name": "Android (mobile operating systems)"
+        },
+        {
+          "id": 13350,
+          "name": "Ansible"
+        },
+        {
+          "id": 13344,
+          "name": "Apache Maven"
+        },
+        {
+          "id": 12408,
+          "name": "Apache Tomcat"
+        },
+        {
+          "id": 10313,
+          "name": "Assembly (computer programming)"
+        },
+        {
+          "id": 9871,
+          "name": "Backbox (penetration testing tool)"
+        },
+        {
+          "id": 9875,
+          "name": "BlackArch"
+        }
+      ],
+      "examples_truncated": true,
+      "suggested_action": "Recover only with authoritative evidence; leave unknown meanwhile."
+    },
+    {
+      "code": "unknown_source_version",
+      "category": "unknown",
+      "table": "skills",
+      "count": 4358,
+      "records": [
+        {
+          "id": 12153
+        },
+        {
+          "id": 10344
+        },
+        {
+          "id": 13016
+        },
+        {
+          "id": 10329
+        },
+        {
+          "id": 10321
+        },
+        {
+          "id": 10320
+        },
+        {
+          "id": 12965
+        },
+        {
+          "id": 13256
+        },
+        {
+          "id": 13255
+        },
+        {
+          "id": 13268
+        },
+        {
+          "id": 10297
+        },
+        {
+          "id": 9870
+        },
+        {
+          "id": 13074
+        },
+        {
+          "id": 12416
+        },
+        {
+          "id": 13350
+        },
+        {
+          "id": 13344
+        },
+        {
+          "id": 12408
+        },
+        {
+          "id": 10313
+        },
+        {
+          "id": 9871
+        },
+        {
+          "id": 9875
+        }
+      ],
+      "examples_truncated": true,
+      "suggested_action": "Record verified original extraction version if recovered."
+    },
+    {
+      "code": "unclassified_careers",
+      "category": "optional",
+      "table": "careers",
+      "count": 212,
+      "records": [
+        {
+          "id": 513,
+          "title": "EU funds manager"
+        },
+        {
+          "id": 608,
+          "title": "Freinet school teacher"
+        },
+        {
+          "id": 531,
+          "title": "ICT intelligent systems designer"
+        },
+        {
+          "id": 601,
+          "title": "ICT network administrator"
+        },
+        {
+          "id": 694,
+          "title": "ICT network architect"
+        },
+        {
+          "id": 679,
+          "title": "ICT network engineer"
+        },
+        {
+          "id": 581,
+          "title": "ICT research consultant"
+        },
+        {
+          "id": 591,
+          "title": "ICT security manager"
+        },
+        {
+          "id": 626,
+          "title": "ICT system administrator"
+        },
+        {
+          "id": 632,
+          "title": "ICT system analyst"
+        },
+        {
+          "id": 695,
+          "title": "ICT system architect"
+        },
+        {
+          "id": 494,
+          "title": "ICT teacher secondary school"
+        },
+        {
+          "id": 589,
+          "title": "Montessori school teacher"
+        },
+        {
+          "id": 484,
+          "title": "accounting manager"
+        },
+        {
+          "id": 533,
+          "title": "advanced nurse practitioner"
+        },
+        {
+          "id": 554,
+          "title": "advertising manager"
+        },
+        {
+          "id": 634,
+          "title": "alternative fuels engineer"
+        },
+        {
+          "id": 561,
+          "title": "analytical chemist"
+        },
+        {
+          "id": 610,
+          "title": "architect"
+        },
+        {
+          "id": 704,
+          "title": "art therapist"
+        }
+      ],
+      "examples_truncated": true,
+      "suggested_action": "Review and curate a CareerCoach family; retain an explicit unclassified state."
+    }
+  ]
+}

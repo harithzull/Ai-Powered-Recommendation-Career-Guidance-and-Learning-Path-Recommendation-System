@@ -1,0 +1,98 @@
+{
+  "application_tables": {
+    "auth_user_groups": {
+      "before_count": 0,
+      "after_count": 0,
+      "all_original_columns_unchanged": true
+    },
+    "django_admin_log": {
+      "before_count": 0,
+      "after_count": 0,
+      "all_original_columns_unchanged": true
+    },
+    "auth_group": {
+      "before_count": 0,
+      "after_count": 0,
+      "all_original_columns_unchanged": true
+    },
+    "auth_user": {
+      "before_count": 22,
+      "after_count": 22,
+      "all_original_columns_unchanged": true
+    },
+    "django_session": {
+      "before_count": 32,
+      "after_count": 32,
+      "all_original_columns_unchanged": true
+    },
+    "assessment_riasecquestion": {
+      "before_count": 42,
+      "after_count": 42,
+      "all_original_columns_unchanged": true
+    },
+    "assessment_userresponse": {
+      "before_count": 19,
+      "after_count": 19,
+      "all_original_columns_unchanged": true
+    },
+    "assessment_skillrating": {
+      "before_count": 77,
+      "after_count": 77,
+      "all_original_columns_unchanged": true
+    },
+    "assessment_riasecanswer": {
+      "before_count": 222,
+      "after_count": 222,
+      "all_original_columns_unchanged": true
+    },
+    "accounts_userprofile": {
+      "before_count": 10,
+      "after_count": 10,
+      "all_original_columns_unchanged": true
+    },
+    "recommender_career": {
+      "before_count": 240,
+      "after_count": 240,
+      "all_original_columns_unchanged": true
+    },
+    "recommender_careerskill": {
+      "before_count": 15727,
+      "after_count": 15727,
+      "all_original_columns_unchanged": true
+    },
+    "recommender_skill": {
+      "before_count": 4358,
+      "after_count": 4358,
+      "all_original_columns_unchanged": true
+    },
+    "roadmap_roadmapprogress": {
+      "before_count": 15,
+      "after_count": 15,
+      "all_original_columns_unchanged": true
+    },
+    "roadmap_savedroadmap": {
+      "before_count": 3,
+      "after_count": 3,
+      "all_original_columns_unchanged": true
+    },
+    "accounts_securitycounter": {
+      "before_count": 0,
+      "after_count": 0,
+      "all_original_columns_unchanged": true
+    },
+    "recommender_cachedrecommendation": {
+      "before_count": 6,
+      "after_count": 0,
+      "all_original_columns_unchanged": false
+    }
+  },
+  "source_and_vector_files_unchanged": {
+    "careers_clean (1).csv": true,
+    "career_skills_clean (1).csv": true,
+    "skills_clean (1).csv": true,
+    "skill_names.json": true,
+    "skill_vectors.npy": true
+  },
+  "note": "Derived recommendation cache invalidation is expected; all other existing application records and original fields are identical.",
+  "repeat_import_all_skipped": true
+}
