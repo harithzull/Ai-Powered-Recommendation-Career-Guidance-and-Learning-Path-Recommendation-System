@@ -3,10 +3,14 @@ from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect, render
 from django.utils.http import url_has_allowed_host_and_scheme
+from django.views.decorators.http import require_http_methods
+from django.db import transaction
+
+from assessment.state import invalidate_derived
+from careercoach.security import rate_limited, serialized_user_work
 
 from .forms import ProfileForm, RegisterForm
 from .models import UserProfile
-from assessment.models import UserResponse
 
 
 def _safe_next(request, default="dashboard:index"):
@@ -26,6 +30,8 @@ def _safe_next(request, default="dashboard:index"):
     return next_url if url_is_safe else default
 
 
+@require_http_methods(["GET", "POST"])
+@rate_limited("register", "REGISTER_ATTEMPTS_PER_HOUR", 3600)
 def register(request):
     if request.user.is_authenticated:
         return redirect("dashboard:index")
@@ -42,20 +48,17 @@ def register(request):
 
 
 @login_required
+@require_http_methods(["GET", "POST"])
+@serialized_user_work
 def profile(request):
     instance, _ = UserProfile.objects.get_or_create(user=request.user)
     if request.method == "POST":
         form = ProfileForm(request.POST, instance=instance)
         if form.is_valid():
-            form.save()
+            with transaction.atomic():
+                form.save()
+                invalidate_derived(request.user)
             messages.success(request, "Profile saved.")
-            # If the user has completed the assessment, recompute recommendations
-            # now so the next page load uses the updated background score.
-            if UserResponse.objects.filter(
-                user=request.user, riasec_answers__isnull=False, skill_ratings__isnull=False
-            ).exists():
-                from recommender.cache import compute_and_cache
-                compute_and_cache(request.user)
             return redirect(_safe_next(request))
     else:
         form = ProfileForm(instance=instance)

@@ -16,7 +16,7 @@
         name="{{ field.html_name }}"
         id="{{ field.id_for_label }}"
         autocomplete="{{ field.html_name }}"
-        {% if field.value %}value="{{ field.value }}"{% endif %}
+        {% if field.value and field.field.widget.input_type != 'password' %}value="{{ field.value }}"{% endif %}
       />
       {% if field.help_text %}
         <div class="f-error" style="color:var(--muted)">{{ field.help_text }}</div>

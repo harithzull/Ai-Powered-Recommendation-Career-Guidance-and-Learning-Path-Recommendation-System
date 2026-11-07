@@ -124,8 +124,8 @@
 </form>
 
 {# ── Data islands ── #}
-<script id="suggested-skills-data" type="application/json">{{ suggested_skills_json|safe }}</script>
-<script id="initial-ratings-data"  type="application/json">{{ initial_ratings_json|safe }}</script>
+{{ suggested_skills|json_script:"suggested-skills-data" }}
+{{ initial_ratings|json_script:"initial-ratings-data" }}
 
 <script>
 (function () {

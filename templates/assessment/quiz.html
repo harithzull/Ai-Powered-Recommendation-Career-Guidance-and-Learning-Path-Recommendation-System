@@ -105,9 +105,9 @@
 </form>
 
 {# ── JSON data islands for JS ─────────────────────────────────────────────── #}
-<script id="skills-by-type-data" type="application/json">{{ skills_by_type_json|safe }}</script>
-<script id="question-types-data" type="application/json">{{ question_types_json|safe }}</script>
-<script id="initial-ratings-data" type="application/json">{{ initial_ratings_json|safe }}</script>
+{{ skills_by_type|json_script:"skills-by-type-data" }}
+{{ question_types|json_script:"question-types-data" }}
+{{ initial_ratings|json_script:"initial-ratings-data" }}
 
 <script>
 (function () {

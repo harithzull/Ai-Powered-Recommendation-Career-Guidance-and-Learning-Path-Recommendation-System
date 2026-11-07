@@ -190,13 +190,12 @@ def _call_groq(prompt: str) -> dict | None:
         return None
     try:
         from groq import Groq
-        client = Groq(api_key=api_key)
-        completion = client.chat.completions.create(
-            model="llama-3.3-70b-versatile",
-            messages=[{"role": "user", "content": prompt}],
-            max_tokens=1800,
-            temperature=0.5,
-        )
+        with Groq(api_key=api_key, timeout=settings.GROQ_TIMEOUT_SECONDS, max_retries=0) as client:
+            completion = client.chat.completions.create(
+                model=settings.GROQ_MODEL,
+                messages=[{"role": "user", "content": prompt}],
+                max_tokens=1800, temperature=0.5,
+            )
         raw = completion.choices[0].message.content.strip()
         if raw.startswith("```"):
             raw = raw.split("```", 2)[1]
@@ -205,15 +204,26 @@ def _call_groq(prompt: str) -> dict | None:
             raw = raw.rsplit("```", 1)[0].strip()
         return json.loads(raw)
     except Exception as e:
-        logger.warning("Groq roadmap generation failed: %s", e)
+        logger.warning("Groq roadmap generation failed (%s)", type(e).__name__)
         return None
 
 
 def _steps_from_llm(data: dict) -> list[RoadmapStep]:
+    if not isinstance(data, dict) or not isinstance(data.get("steps"), list) or not 5 <= len(data["steps"]) <= 8:
+        raise ValueError("Invalid roadmap structure")
+    if not isinstance(data.get("roadmap_title", ""), str) or len(data.get("roadmap_title", "")) > 200:
+        raise ValueError("Invalid roadmap title")
+    if not isinstance(data.get("overview", ""), str) or len(data.get("overview", "")) > 4000:
+        raise ValueError("Invalid roadmap overview")
     steps = []
     valid_phases = set(PHASE_COLORS)
     valid_diff   = set(DIFFICULTY_COLORS)
     for i, s in enumerate(data.get("steps", [])):
+        if not isinstance(s, dict):
+            raise ValueError("Invalid roadmap step")
+        for field in ("phase", "title", "description", "estimated_time", "difficulty", "deliverable", "why_it_matters", "search_keywords"):
+            if not isinstance(s.get(field, ""), str) or len(s.get(field, "")) > 2000:
+                raise ValueError("Invalid roadmap field")
         phase = s.get("phase", "Skill Building")
         if phase not in valid_phases:
             phase = "Skill Building"
@@ -323,9 +333,11 @@ def get_or_create_roadmap(user, career: Career) -> tuple[list[RoadmapStep], str,
         return _steps_from_json(saved.steps_json), saved.title, saved.overview
     except SavedRoadmap.DoesNotExist:
         pass
-    except (json.JSONDecodeError, TypeError, ValueError):
+    except (json.JSONDecodeError, TypeError, ValueError, KeyError, AttributeError):
         # Corrupt row — drop it and regenerate below.
         SavedRoadmap.objects.filter(user=user, career=career).delete()
+        from roadmap.models import RoadmapProgress
+        RoadmapProgress.objects.filter(user=user, career=career).delete()
 
     steps, title, overview = generate_roadmap(user, career)
     if steps:
@@ -356,9 +368,12 @@ def generate_roadmap(user, career: Career) -> tuple[list[RoadmapStep], str, str]
     prompt = _build_prompt(user, career, missing_names)
     data   = _call_groq(prompt)
 
-    if data and data.get("steps"):
-        steps = _steps_from_llm(data)
-        return steps, data.get("roadmap_title", career.title), data.get("overview", "")
+    if data:
+        try:
+            steps = _steps_from_llm(data)
+            return steps, data.get("roadmap_title") or career.title, data.get("overview", "")
+        except (ValueError, TypeError):
+            logger.warning("AI returned an invalid roadmap; using fallback")
 
     steps = _fallback_steps(career, missing_names)
     return steps, f"Roadmap: {career.title}", ""

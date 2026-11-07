@@ -1,4 +1,5 @@
-Django==6.0.5
-groq
-numpy
-sentence-transformers
+Django==6.0.10
+groq==0.37.1
+numpy==2.5.4
+sentence-transformers==5.7.0
+python-dotenv==1.2.4

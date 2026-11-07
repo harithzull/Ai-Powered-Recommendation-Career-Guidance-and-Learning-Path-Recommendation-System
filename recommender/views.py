@@ -2,14 +2,16 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect, render
 
 from accounts.models import UserProfile
-from assessment.models import UserResponse
 from recommender.cache import get_cached_or_compute
+from assessment.state import is_complete
+from django.views.decorators.http import require_GET
 
 
 @login_required
+@require_GET
 def results(request):
     # Require assessment
-    if not UserResponse.objects.filter(user=request.user).exists():
+    if not is_complete(request.user):
         return redirect("assessment:quiz")
 
     # Require profile — redirect with ?next= so they come back after saving

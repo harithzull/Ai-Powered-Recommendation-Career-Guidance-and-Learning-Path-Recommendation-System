@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}Learning roadmap · CareerCoach{% endblock %}
+{% block page_title %}Your learning roadmap{% endblock %}
+{% block content %}
+<div class="a-alert">
+  <span>Preparing your personalised roadmap for {{ career.title }}…</span>
+</div>
+<form method="post" id="generate-roadmap">
+  {% csrf_token %}
+  <input type="hidden" name="action" value="generate">
+  <button type="submit" class="a-btn a-btn-green">Generate roadmap</button>
+</form>
+<script>document.getElementById("generate-roadmap").submit();</script>
+{% endblock %}

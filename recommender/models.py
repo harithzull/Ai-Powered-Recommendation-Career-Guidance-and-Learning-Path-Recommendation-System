@@ -57,6 +57,7 @@ class CareerSkill(models.Model):
 
 
 class CachedRecommendation(models.Model):
+    input_signature = models.CharField(max_length=64, blank=True, default="")
     user        = models.OneToOneField(User, on_delete=models.CASCADE, related_name="cached_recommendations")
     results_json = models.TextField()
     computed_at  = models.DateTimeField(auto_now=True)

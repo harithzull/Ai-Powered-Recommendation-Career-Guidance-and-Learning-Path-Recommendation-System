@@ -1,16 +1,17 @@
-import json
-
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db import transaction
 from django.http import JsonResponse
 from django.shortcuts import redirect, render
-from django.views.decorators.http import require_GET, require_POST
+from django.views.decorators.http import require_GET, require_POST, require_http_methods
+from django.utils import timezone
 
 from .adaptive import select_next
+from .validation import clean_history, clean_skills, parse_json
+from .state import invalidate_derived
+from careercoach.security import rate_limited, serialized_user_work
 from .models import RIASECAnswer, RIASECQuestion, SkillRating, UserResponse
 from .suggested_skills import get_suggested_skills
-from recommender.cache import compute_and_cache, invalidate as invalidate_rec_cache
 from recommender.scoring import normalized_riasec
 from recommender.models import Skill
 
@@ -22,21 +23,13 @@ RATING_OPTIONS = [
     (5, "5 – Strongly Agree"),
 ]
 
-_VALID = {"1", "2", "3", "4", "5"}
-
-
-def _safe_int(val, default=0):
-    try:
-        return int(val)
-    except (TypeError, ValueError):
-        return default
-
-
 # ─────────────────────────────────────────────────────────────────────────────
 # PAGE 1 — RIASEC interest questions
 # ─────────────────────────────────────────────────────────────────────────────
 
 @login_required
+@require_http_methods(["GET", "POST"])
+@serialized_user_work
 def background(request):
     """
     Step 1 of 3: collect the user's background (field of study + experience).
@@ -44,10 +37,6 @@ def background(request):
     """
     from accounts.forms import ProfileForm
     from accounts.models import UserProfile
-
-    if request.method == "GET" and request.GET.get("retake") == "1":
-        UserResponse.objects.filter(user=request.user).delete()
-        invalidate_rec_cache(request.user)
 
     instance, _ = UserProfile.objects.get_or_create(user=request.user)
 
@@ -57,7 +46,9 @@ def background(request):
         form.fields["field_of_study"].required = True
         form.fields["experience_level"].required = True
         if form.is_valid():
-            form.save()
+            with transaction.atomic():
+                form.save()
+                invalidate_derived(request.user)
             return redirect("assessment:interests")
     else:
         form = ProfileForm(instance=instance)
@@ -66,6 +57,9 @@ def background(request):
 
 
 @login_required
+@require_http_methods(["GET", "POST"])
+@rate_limited("assessment", "ASSESSMENT_REQUESTS_PER_MINUTE", 60, by_user=True)
+@serialized_user_work
 def interests(request):
     """
     Step 2 of 3: adaptive RIASEC interest walk.
@@ -74,10 +68,6 @@ def interests(request):
     ``next_question`` JSON endpoint and finally POSTs the collected answers
     here as ``answers_json`` = ``[{"id": <qid>, "rating": <1-5>}, ...]``.
     """
-    if request.method == "GET" and request.GET.get("retake") == "1":
-        UserResponse.objects.filter(user=request.user).delete()
-        invalidate_rec_cache(request.user)
-
     # Guard: background (step 1) must be completed before the interest walk.
     from accounts.models import UserProfile
     prof, _ = UserProfile.objects.get_or_create(user=request.user)
@@ -87,28 +77,19 @@ def interests(request):
     if request.method == "POST":
         raw = request.POST.get("answers_json", "[]").strip() or "[]"
         try:
-            payload = json.loads(raw)
-        except (json.JSONDecodeError, ValueError):
+            history, valid_questions = clean_history(parse_json(raw), complete=True)
+        except ValueError:
             messages.error(request, "Your answers were malformed — please try again.")
             return redirect("assessment:interests")
 
-        # Validate and de-duplicate (last answer for a question wins).
-        cleaned: dict[int, int] = {}
-        for item in payload if isinstance(payload, list) else []:
-            qid = _safe_int(item.get("id")) if isinstance(item, dict) else 0
-            rating = str(item.get("rating", "")) if isinstance(item, dict) else ""
-            if qid and rating in _VALID:
-                cleaned[qid] = int(rating)
-
-        valid_questions = {
-            q.id: q for q in RIASECQuestion.objects.filter(id__in=cleaned.keys())
-        }
-        if len(valid_questions) < 6:
-            messages.error(request, "Please complete the interest assessment before continuing.")
-            return redirect("assessment:interests")
+        cleaned = dict(history)
 
         with transaction.atomic():
             response, _ = UserResponse.objects.get_or_create(user=request.user)
+            response.completed_at = None
+            response.save(update_fields=["completed_at", "submitted_at"])
+            SkillRating.objects.filter(response=response).delete()
+            invalidate_derived(request.user)
             RIASECAnswer.objects.filter(response=response).delete()
             RIASECAnswer.objects.bulk_create([
                 RIASECAnswer(response=response, question=q, rating=cleaned[qid])
@@ -122,24 +103,18 @@ def interests(request):
     })
 
 
-@require_POST
 @login_required
+@require_POST
+@rate_limited("questions", "ASSESSMENT_REQUESTS_PER_MINUTE", 60, by_user=True)
 def next_question(request):
     """JSON endpoint: given the answer history, return the next question."""
     try:
-        body = json.loads(request.body or "{}")
-        history_raw = body.get("history", [])
-    except (json.JSONDecodeError, ValueError):
+        body = parse_json(request.body.decode("utf-8") or "{}")
+        if not isinstance(body, dict):
+            raise ValueError
+        history, _ = clean_history(body.get("history", []))
+    except (ValueError, UnicodeDecodeError):
         return JsonResponse({"error": "bad request"}, status=400)
-
-    history: list[tuple[int, int]] = []
-    for item in history_raw if isinstance(history_raw, list) else []:
-        if not isinstance(item, dict):
-            continue
-        qid = _safe_int(item.get("id"))
-        rating = _safe_int(item.get("rating"))
-        if qid and 1 <= rating <= 5:
-            history.append((qid, rating))
 
     result = select_next(history)
     if result.done or result.question is None:
@@ -163,6 +138,9 @@ def next_question(request):
 # ─────────────────────────────────────────────────────────────────────────────
 
 @login_required
+@require_http_methods(["GET", "POST"])
+@rate_limited("assessment", "ASSESSMENT_REQUESTS_PER_MINUTE", 60, by_user=True)
+@serialized_user_work
 def skills(request):
     """Step 2 of 2: Adaptive pill skill rating. Requires Page 1 to be done."""
     # Guard: redirect back if Page 1 not completed
@@ -205,20 +183,15 @@ def skills(request):
         raw = request.POST.get("rated_skills_json", "{}").strip() or "{}"
         submitted_skills: dict[str, int] = {}
         try:
-            for name, val in json.loads(raw).items():
-                name = str(name).strip()
-                try:
-                    r = int(val)
-                except (TypeError, ValueError):
-                    continue
-                if name and 1 <= r <= 5:
-                    submitted_skills[name] = r
-        except (json.JSONDecodeError, ValueError):
+            submitted_skills = clean_skills(parse_json(raw))
+        except ValueError:
             messages.error(request, "Skill data was malformed — please try again.")
             return redirect("assessment:skills")
 
         with transaction.atomic():
-            response.save(update_fields=["submitted_at"])
+            response.completed_at = timezone.now()
+            response.save(update_fields=["submitted_at", "completed_at"])
+            invalidate_derived(request.user)
             SkillRating.objects.filter(response=response).delete()
             if submitted_skills:
                 SkillRating.objects.bulk_create([
@@ -226,22 +199,14 @@ def skills(request):
                     for n, r in submitted_skills.items()
                 ])
 
-        # Recompute and overwrite the cache now that new skill ratings are saved.
-        # Called outside the atomic block so the fresh DB rows are visible.
-        compute_and_cache(request.user)
-
-        # The assessment changed, so saved roadmaps (and their step progress)
-        # are stale — clear them so the next roadmap visit regenerates.
-        from roadmap.models import RoadmapProgress, SavedRoadmap
-        SavedRoadmap.objects.filter(user=request.user).delete()
-        RoadmapProgress.objects.filter(user=request.user).delete()
+        # Compute lazily after redirect. Stored answers remain safe if ML is unavailable.
 
         messages.success(request, "Assessment saved! Your responses have been recorded.")
         return redirect("dashboard:index")
 
     return render(request, "assessment/skills.html", {
-        "suggested_skills_json": json.dumps(suggested),
-        "initial_ratings_json":  json.dumps(initial_ratings),
+        "suggested_skills": suggested,
+        "initial_ratings": initial_ratings,
         "pill_count":            len(suggested),
     })
 
@@ -258,10 +223,12 @@ def quiz(request):
 # Skill search endpoint — used by the live-search box in skills.html
 # ─────────────────────────────────────────────────────────────────────────────
 
-@require_GET
 @login_required
+@require_GET
 def skill_search(request):
     q = request.GET.get("q", "").strip()
+    if len(q) > 100:
+        return JsonResponse({"error": "Search query is too long."}, status=400)
     if len(q) < 2:
         return JsonResponse({"results": []})
     names = list(
@@ -270,3 +237,14 @@ def skill_search(request):
         .values_list("name", flat=True)[:10]
     )
     return JsonResponse({"results": names})
+
+
+@login_required
+@require_POST
+@serialized_user_work
+def retake(request):
+    with transaction.atomic():
+        UserResponse.objects.filter(user=request.user).delete()
+        invalidate_derived(request.user)
+        request.session.pop("chatbot_history", None)
+    return redirect("assessment:background")
