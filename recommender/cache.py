@@ -16,11 +16,34 @@ from __future__ import annotations
 
 import json
 import types
+import hashlib
+import logging
+from datetime import timedelta
 
 from django.contrib.auth.models import User
+from django.conf import settings
+from django.utils import timezone
 
 from recommender.models import CachedRecommendation
 from recommender.recommendations import get_recommendations
+from careercoach.security import user_work_lock
+
+logger = logging.getLogger(__name__)
+
+
+class RecommendationUnavailable(Exception):
+    pass
+
+
+def _signature(user):
+    from assessment.models import UserResponse
+    from accounts.models import UserProfile
+    response = UserResponse.objects.filter(user=user).values("submitted_at", "completed_at").first()
+    profile = UserProfile.objects.filter(user=user).values("field_of_study", "experience_level").first()
+    payload = {"version": 1, "response": response, "profile": profile,
+               "weights": settings.RECOMMENDATION_WEIGHTS,
+               "threshold": settings.SIMILARITY_THRESHOLD, "model": settings.EMBEDDING_MODEL_PATH}
+    return hashlib.sha256(json.dumps(payload, sort_keys=True, default=str).encode()).hexdigest()
 
 
 # ── Serialisation helpers ────────────────────────────────────────────────────
@@ -73,20 +96,33 @@ def _from_json(data: str) -> list[dict]:
 
 def compute_and_cache(user: User, top_n: int = 5) -> list[dict]:
     """Run the recommendation pipeline, persist the result, and return it."""
-    results = get_recommendations(user, top_n=top_n)
+    try:
+        # Always store at least the five results used by the full results page.
+        results = get_recommendations(user, top_n=max(5, top_n))
+    except (OSError, RuntimeError, ImportError, ValueError) as exc:
+        logger.warning("Recommendation computation failed (%s)", type(exc).__name__)
+        raise RecommendationUnavailable from exc
     CachedRecommendation.objects.update_or_create(
         user=user,
-        defaults={"results_json": _to_json(results)},
+        defaults={"results_json": _to_json(results), "input_signature": _signature(user)},
     )
-    return results
+    return results[:top_n]
 
 
-def get_cached_or_compute(user: User, top_n: int = 5) -> list[dict]:
+def get_cached_or_compute(user: User, top_n: int = 5, *, compute=True) -> list[dict]:
     """Return the cached recommendations, computing and saving them if absent."""
     try:
         cached = CachedRecommendation.objects.get(user=user)
-        return _from_json(cached.results_json)[:top_n]
-    except CachedRecommendation.DoesNotExist:
+        if (cached.input_signature == _signature(user)
+                and cached.computed_at > timezone.now() - timedelta(hours=24)):
+            results = _from_json(cached.results_json)
+            if len(results) >= top_n or top_n <= 5:
+                return results[:top_n]
+    except (CachedRecommendation.DoesNotExist, ValueError, TypeError, KeyError, AttributeError):
+        pass
+    if not compute:
+        return []
+    with user_work_lock(user):
         return compute_and_cache(user, top_n=top_n)
 
 

@@ -43,7 +43,7 @@
 {% block content %}
 <p style="color:var(--muted);font-size:14px;margin-bottom:24px">
   Your top matches, ranked by a blend of interest alignment (45%), skill coverage (40%), and background fit (15%).
-  Retake the <a href="/assessment/interests/?retake=1" style="color:var(--moss);font-weight:600">assessment</a> any time.
+  Retake the assessment any time using the button below.
 </p>
 
 <div class="match-grid">
@@ -105,7 +105,10 @@
 </div>
 
 <div style="text-align:center;margin-top:8px">
-  <a href="/assessment/interests/?retake=1" class="a-btn a-btn-ghost">Retake assessment</a>
+  <form method="post" action="{% url 'assessment:retake' %}">
+    {% csrf_token %}
+    <button type="submit" class="a-btn a-btn-ghost">Retake assessment</button>
+  </form>
 </div>
 
 <script>

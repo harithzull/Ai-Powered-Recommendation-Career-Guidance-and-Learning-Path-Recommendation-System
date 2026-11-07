@@ -44,6 +44,7 @@ class UserResponse(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="assessment_response")
     submitted_at = models.DateTimeField(auto_now=True)
     free_text_skills = models.TextField(blank=True)
+    completed_at = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):
         return f"Response for {self.user.username} ({self.submitted_at:%Y-%m-%d})"

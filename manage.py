@@ -6,7 +6,8 @@ import sys
 
 def main():
     """Run administrative tasks."""
-    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'careercoach.settings')
+    settings_module = 'careercoach.test_settings' if len(sys.argv) > 1 and sys.argv[1] == 'test' else 'careercoach.settings'
+    os.environ.setdefault('DJANGO_SETTINGS_MODULE', settings_module)
     try:
         from django.core.management import execute_from_command_line
     except ImportError as exc:

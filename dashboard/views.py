@@ -2,14 +2,14 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import render
 
 from accounts.models import UserProfile
-from assessment.models import UserResponse
+from assessment.state import is_complete
+from django.views.decorators.http import require_GET
 
 
 @login_required
+@require_GET
 def index(request):
-    has_assessment = UserResponse.objects.filter(
-        user=request.user, riasec_answers__isnull=False
-    ).exists()
+    has_assessment = is_complete(request.user)
     profile, _ = UserProfile.objects.get_or_create(user=request.user)
     profile_complete = profile.is_complete()
 

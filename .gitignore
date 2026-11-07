@@ -11,6 +11,8 @@ __pycache__/
 server.err
 
 .env
+.env.*
+!.env.example
 .venv/
 venv/
 env/

@@ -50,7 +50,7 @@ def get_recommendations(user: User, top_n: int = 5) -> list[dict]:
     try:
         response = UserResponse.objects.prefetch_related(
             "riasec_answers__question", "skill_ratings"
-        ).get(user=user)
+        ).get(user=user, completed_at__isnull=False)
     except UserResponse.DoesNotExist:
         return []
 

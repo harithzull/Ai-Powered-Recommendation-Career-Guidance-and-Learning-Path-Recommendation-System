@@ -1,114 +1,186 @@
 # CareerCoach
 
-A Django web application for career guidance, RIASEC assessment, career recommendations, skill gap analysis, roadmap tracking, and an optional AI chatbot.
+Django career guidance with adaptive RIASEC assessment, semantic career recommendations,
+skill gaps, personalised roadmaps, progress tracking, and an optional Groq chatbot.
 
-## Requirements
+## Local setup (Windows PowerShell)
 
-- Python 3.12 or newer
-- pip
-- Git
-
-## Setup
-
-Clone the repository and enter the project folder:
-
-```bash
-git clone <your-repo-url>
-cd <your-repo-folder>
-```
-
-Create and activate a virtual environment:
-
-```bash
-python -m venv .venv
-```
-
-On Windows PowerShell:
+Use Python 3.12 or 3.13. CI covers both; the local Phase 1 checks use Python 3.13.
 
 ```powershell
+python -m venv .venv
 .\.venv\Scripts\Activate.ps1
+python -m pip install -r requirements.lock
 ```
 
-On macOS/Linux:
+`requirements.txt` pins direct dependencies; `requirements.lock` pins the resolved
+runtime dependencies. CI installs CPU-only PyTorch before the lock to avoid downloading
+CUDA libraries on Linux. Revalidate the lock on your deployment OS when updating it.
 
-```bash
-source .venv/bin/activate
+If `.env` does not already exist:
+
+```powershell
+Copy-Item .env.example .env
 ```
 
-Install dependencies:
+Generate a new secret, then put it in the ignored `.env` as `DJANGO_SECRET_KEY`:
 
-```bash
-pip install -r requirements.txt
+```powershell
+python -c "import secrets; print(secrets.token_urlsafe(64))"
 ```
 
-Run database migrations:
+Use `DJANGO_DEBUG=true` and local hosts for development. Keep `GROQ_API_KEY` blank to
+disable external AI; rule-based roadmaps remain available. To enable AI, set your key
+in `.env`, never in source. Process environment values override `.env` values. Set
+`DJANGO_READ_DOT_ENV=false` to disable file loading entirely.
 
-```bash
+```powershell
 python manage.py migrate
-```
-
-Create an admin user:
-
-```bash
 python manage.py createsuperuser
-```
-
-Start the development server:
-
-```bash
 python manage.py runserver
 ```
 
-Open the app at:
+Visit http://127.0.0.1:8000/. Back up an existing database before applying migrations.
+The new completion migration marks existing responses with both answers and skill
+ratings complete. Users who previously submitted zero skills may need to resubmit
+the skills step once; future empty selections are explicitly supported.
 
-```text
-http://127.0.0.1:8000/
-```
+## Recommendation data and model
 
-## Recommendation Data
+The repository includes the CSV catalog and a 4,358-row, 384-dimension skill-vector
+store in `data/`. On a new database, import the catalog:
 
-The recommender import command expects these files inside a `data/` folder:
-
-- `careers_clean (1).csv`
-- `skills_clean (1).csv`
-- `career_skills_clean (1).csv`
-
-When the files are available, import the data:
-
-```bash
+```powershell
 python manage.py import_data
 ```
 
-Then build skill vectors:
+For local development, the first nonempty skill encoding downloads
+`all-MiniLM-L6-v2`. Production defaults to local model files only. Provision the
+model during a trusted build, set `EMBEDDING_MODEL_PATH` to the resulting directory,
+and keep it consistent with the vectors. Rebuilding vectors also requires the model:
 
-```bash
+```powershell
 python manage.py build_skill_vectors
 ```
 
-## Chatbot Setup
+Replacing an existing catalog requires `python manage.py import_data --replace-existing`.
+**Back up first: replacement deletes saved roadmaps and progress through foreign-key
+cascades.** Input files are checked before deletion, and the operation is atomic.
+It also clears recommendation caches. Admin catalog edits invalidate recommendations.
+Direct database/bulk changes outside these entry points require explicit cache
+invalidation and vector regeneration where applicable. Restart workers after replacing
+vector files, which are loaded once per process.
 
-The chatbot uses Groq. Add your API key in `careercoach/settings.py`:
+## Tests and checks
 
-```python
-GROQ_API_KEY = "your-api-key"
-```
-
-Without this key, the rest of the app can still run, but chatbot responses will be disabled.
-
-## Useful Commands
-
-Run tests:
-
-```bash
+```powershell
 python manage.py test
+python manage.py check
+python manage.py makemigrations --check --dry-run --settings=careercoach.test_settings
+python scripts/check_deploy.py
+python -m pip check
 ```
 
-Run the server:
+For known-vulnerability auditing (requires network access to the advisory service):
 
-```bash
-python manage.py runserver
+```powershell
+python -m pip install -r requirements-dev.txt
+python -m pip_audit --no-deps --disable-pip -r requirements.lock
 ```
 
-## Notes
+`manage.py test` defaults to `careercoach.test_settings`: an in-memory database,
+an explicitly fake signing secret, no Groq key, and a runner that rejects network
+connections. For other test entry points pass `--settings=careercoach.test_settings`.
+Groq requests and model encoding are mocked; semantic similarity is tested against
+small deterministic vectors. Tests do not modify your local database or download models.
+The fast password hasher is confined to test settings.
 
-Local files such as `db.sqlite3`, cache files, logs, and virtual environments are ignored by Git.
+`scripts/check_deploy.py` runs `check --deploy --fail-level WARNING` with disposable,
+production-like settings and no `.env`. It simulates a deployment with HTTPS on all
+subdomains and HSTS preload enabled. It does not validate your real proxy, DNS, TLS,
+database, or provider credentials. Run `python manage.py check --deploy` again in
+the actual deployment environment.
+
+GitHub Actions runs tests, migration checks, dependency compatibility checks, and the
+production configuration check on Python 3.12 and 3.13. The workflow runs only after
+you push it; local success is not evidence that GitHub Actions has run.
+
+## Production prerequisites
+
+- Inject a new `DJANGO_SECRET_KEY` through a secret store. The key formerly committed
+  in this repository is compromised: rotate it wherever used. Rotation may invalidate
+  sessions and other signed data. Never retain the exposed value as a fallback.
+- Set `DJANGO_DEBUG=false` and exact comma-separated `DJANGO_ALLOWED_HOSTS` values.
+  Use exact HTTPS `DJANGO_CSRF_TRUSTED_ORIGINS` only if needed; same-origin forms
+  do not require an entry. Wildcards are rejected.
+- Terminate TLS at a correctly configured reverse proxy and use a production WSGI/ASGI
+  server. `runserver` is for development. Select and pin your server for the target OS
+  (for example, Gunicorn on Linux or Waitress on Windows).
+- Only enable `DJANGO_TRUST_PROXY=true` if the trusted proxy strips incoming
+  `X-Forwarded-Proto` and supplies its own. Configure the server/proxy to provide the
+  actual client IP in `REMOTE_ADDR`; the app deliberately ignores `X-Forwarded-For`.
+  Otherwise clients may share an authentication limit behind the proxy.
+- Production enables HTTPS redirects and Secure session/CSRF cookies automatically.
+  Start with `DJANGO_HSTS_SECONDS=3600` after verifying HTTPS. Increase to 31536000,
+  include subdomains, and enable preload only when every affected subdomain supports
+  HTTPS permanently. The corresponding deployment-check warnings during a staged
+  rollout are intentional; do not silence them globally.
+- Apply migrations before serving traffic. Configure a persistent database, access
+  controls, and encrypted backups with tested restoration. SQLite supports local use;
+  assess write contention before a multi-worker launch. PostgreSQL and its driver
+  require deployment-specific configuration and validation; this phase retains SQLite.
+- Run `python manage.py collectstatic --noinput` and serve `staticfiles/` through your
+  server/CDN. Keep `.env`, database files, model caches, and logs outside public paths.
+- Provision the embedding model and verify recommendations in staging. Monitor memory
+  and request latency; large ML imports are lazy so login and system checks stay light.
+- Set proxy body-size, request-timeout, and connection limits in addition to Django's
+  64 KiB application body limit. Use HTTPS between services where supported.
+- Set Groq provider spending limits and alerts. Application quotas count attempts,
+  including failed requests, and are not a global billing cap. Add service-wide spend
+  enforcement and perimeter abuse controls before a commercial launch.
+- Document the profile/assessment/chat data sent to Groq, obtain appropriate user
+  consent, and define retention/deletion policies before enrolling real customers.
+
+## Usage safeguards
+
+Shared database counters enforce these default fixed-window limits:
+
+| Operation | Default | Identity |
+| --- | --- | --- |
+| Login attempts | 10/minute | Client IP |
+| Registration attempts | 10/hour | Client IP |
+| Assessment writes / question requests | 30/minute per scope | User |
+| Chat messages | 10/minute and 100/day | User |
+| New roadmap generation | 10/day | User |
+
+The corresponding settings are configurable through environment variables (see
+`careercoach/settings.py`). Counters store keyed hashes rather than raw IPs and fail
+closed if their database is unavailable. Schedule this command daily:
+
+```powershell
+python manage.py cleanup_security_counters
+```
+
+Per-user work leases prevent duplicate concurrent generation and conflicting writes;
+they expire after five minutes if a worker crashes. Groq has a 20-second timeout by
+default, no automatic retries, and a maximum configurable timeout of 120 seconds.
+Ensure model inference and server request timeouts stay below the lease lifetime.
+Limits reset at fixed clock boundaries, rather than using a sliding window.
+
+## Phase 1 behavior changes
+
+- Retake and chat clearing require POST and CSRF tokens. Existing retake buttons retain
+  their appearance and now submit forms; old `?retake=1` links no longer delete data.
+- Interests require valid, distinct questions covering all six types, with at most two
+  per type. Invalid input leaves existing data untouched. At most 30 skills of 100
+  characters each are accepted, with integer ratings from 1 to 5.
+- Partial assessments do not unlock recommendations or roadmaps. Relevant profile or
+  assessment changes invalidate recommendations, saved roadmaps, and progress.
+- Recommendations are computed lazily after saving; model failures produce a generic
+  temporary-unavailability message while preserving the submitted assessment.
+- Opening a new roadmap displays a preparation page that automatically submits a
+  CSRF-protected POST. Saved plans load normally; generation is never performed by GET.
+- Rate limits return 429; overlapping work returns 409. Provider failures use generic
+  messages. Invalid roadmap output falls back to the existing rule-based plan.
+
+See `docs/phase1-security.md` for the implementation scope and remaining risks.

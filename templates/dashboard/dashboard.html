@@ -88,9 +88,14 @@
     </div>
     <h3>{% if has_assessment %}Retake Assessment{% else %}Career Assessment{% endif %}</h3>
     <p>{% if has_assessment %}Update your interests and skill ratings to refresh your career matches.{% else %}12-question interest quiz + skill rating to unlock your personalised career recommendations.{% endif %}</p>
-    <a href="{% if has_assessment %}/assessment/background/?retake=1{% else %}/assessment/background/{% endif %}" class="a-btn a-btn-green" style="font-size:13px;padding:8px 16px">
-      {% if has_assessment %}Retake quiz{% else %}Start now{% endif %}
-    </a>
+    {% if has_assessment %}
+    <form method="post" action="{% url 'assessment:retake' %}">
+      {% csrf_token %}
+      <button type="submit" class="a-btn a-btn-green" style="font-size:13px;padding:8px 16px">Retake quiz</button>
+    </form>
+    {% else %}
+    <a href="/assessment/background/" class="a-btn a-btn-green" style="font-size:13px;padding:8px 16px">Start now</a>
+    {% endif %}
   </div>
 
   <div class="feat-card">

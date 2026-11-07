@@ -1,8 +1,8 @@
 from django.urls import reverse
 
 from accounts.models import UserProfile
-from assessment.models import UserResponse
 from recommender.cache import get_cached_or_compute
+from assessment.state import is_complete
 
 
 def navigation(request):
@@ -14,7 +14,7 @@ def navigation(request):
     if not user or not user.is_authenticated:
         return context
 
-    has_assessment = UserResponse.objects.filter(user=user).exists()
+    has_assessment = is_complete(user)
     if not has_assessment:
         return context
 
@@ -22,7 +22,8 @@ def navigation(request):
     if not profile.is_complete():
         return context
 
-    recs = get_cached_or_compute(user, top_n=1)
+    # Navigation must not initiate ML work or mutate state while rendering a page.
+    recs = get_cached_or_compute(user, top_n=1, compute=False)
     if recs:
         context["top_roadmap_url"] = reverse(
             "roadmap:roadmap",

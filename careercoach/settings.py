@@ -10,22 +10,71 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
+import os
 from pathlib import Path
+
+from django.core.exceptions import ImproperlyConfigured
+from dotenv import load_dotenv
+
+from .environment import env_bool, env_int, env_list
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
+# Process environment takes precedence over the ignored local .env file.
+if os.environ.get("DJANGO_READ_DOT_ENV", "true").lower() == "true":
+    load_dotenv(BASE_DIR / ".env", override=False)
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-&yti$+$+q#z-)*yuz+)z*x8h8t#=krbdm0$yk_24sv*%&dv65$'
+DEBUG = env_bool("DJANGO_DEBUG", False)
+SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY", "").strip()
+if not SECRET_KEY or SECRET_KEY == "replace-with-a-new-random-secret":
+    raise ImproperlyConfigured("Set DJANGO_SECRET_KEY to a new random secret.")
+if not DEBUG and (len(SECRET_KEY) < 50 or len(set(SECRET_KEY)) < 5
+                  or SECRET_KEY.startswith("django-insecure-")):
+    raise ImproperlyConfigured("Production requires a strong, unique DJANGO_SECRET_KEY.")
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+ALLOWED_HOSTS = env_list("DJANGO_ALLOWED_HOSTS", "localhost,127.0.0.1,[::1]" if DEBUG else "")
+if not DEBUG and (not ALLOWED_HOSTS or "*" in ALLOWED_HOSTS):
+    raise ImproperlyConfigured("Production requires explicit DJANGO_ALLOWED_HOSTS.")
+CSRF_TRUSTED_ORIGINS = env_list("DJANGO_CSRF_TRUSTED_ORIGINS")
+if any("*" in origin or not origin.startswith("https://" if not DEBUG else ("http://", "https://"))
+       for origin in CSRF_TRUSTED_ORIGINS):
+    raise ImproperlyConfigured("Set exact CSRF trusted origins with the correct scheme.")
 
-ALLOWED_HOSTS = []
+SESSION_COOKIE_SECURE = not DEBUG
+CSRF_COOKIE_SECURE = not DEBUG
+SESSION_COOKIE_HTTPONLY = True
+SESSION_COOKIE_SAMESITE = "Lax"
+CSRF_COOKIE_SAMESITE = "Lax"
+SECURE_SSL_REDIRECT = not DEBUG
+SECURE_HSTS_SECONDS = env_int("DJANGO_HSTS_SECONDS", 3600 if not DEBUG else 0)
+SECURE_HSTS_INCLUDE_SUBDOMAINS = env_bool("DJANGO_HSTS_INCLUDE_SUBDOMAINS", False)
+SECURE_HSTS_PRELOAD = env_bool("DJANGO_HSTS_PRELOAD", False)
+if SECURE_HSTS_PRELOAD and (SECURE_HSTS_SECONDS < 31536000 or not SECURE_HSTS_INCLUDE_SUBDOMAINS):
+    raise ImproperlyConfigured("HSTS preload requires one year and includeSubDomains.")
+if env_bool("DJANGO_TRUST_PROXY", False):
+    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+SECURE_CONTENT_TYPE_NOSNIFF = True
+SECURE_REFERRER_POLICY = "same-origin"
+X_FRAME_OPTIONS = "DENY"
+DATA_UPLOAD_MAX_MEMORY_SIZE = 64 * 1024
+DATA_UPLOAD_MAX_NUMBER_FIELDS = 200
+
+# Shared database counters work across WSGI/ASGI workers without a new service.
+# Expired counters are removed by the cleanup_security_counters command.
+LOGIN_ATTEMPTS_PER_MINUTE = env_int("LOGIN_ATTEMPTS_PER_MINUTE", 10, 1)
+REGISTER_ATTEMPTS_PER_HOUR = env_int("REGISTER_ATTEMPTS_PER_HOUR", 10, 1)
+CHAT_REQUESTS_PER_MINUTE = env_int("CHAT_REQUESTS_PER_MINUTE", 10, 1)
+CHAT_REQUESTS_PER_DAY = env_int("CHAT_REQUESTS_PER_DAY", 100, 1)
+ROADMAP_REQUESTS_PER_DAY = env_int("ROADMAP_REQUESTS_PER_DAY", 10, 1)
+ASSESSMENT_REQUESTS_PER_MINUTE = env_int("ASSESSMENT_REQUESTS_PER_MINUTE", 30, 1)
+GROQ_TIMEOUT_SECONDS = env_int("GROQ_TIMEOUT_SECONDS", 20, 1)
+if GROQ_TIMEOUT_SECONDS > 120:
+    raise ImproperlyConfigured("GROQ_TIMEOUT_SECONDS must not exceed 120 seconds.")
+GROQ_MODEL = os.environ.get("GROQ_MODEL", "llama-3.3-70b-versatile")
+EMBEDDING_MODEL_PATH = os.environ.get("EMBEDDING_MODEL_PATH", "all-MiniLM-L6-v2")
+EMBEDDING_LOCAL_FILES_ONLY = env_bool("EMBEDDING_LOCAL_FILES_ONLY", not DEBUG)
 
 
 # Application definition
@@ -47,6 +96,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'careercoach.middleware.ServiceErrorMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -122,12 +172,14 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
 STATIC_URL = 'static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'
+DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 
 LOGIN_URL = '/accounts/login/'
 LOGIN_REDIRECT_URL = '/dashboard/'
 LOGOUT_REDIRECT_URL = '/accounts/login/'
 
-GROQ_API_KEY = ""   # paste your own free key from console.groq.com
+GROQ_API_KEY = os.environ.get("GROQ_API_KEY", "").strip()
 
 SIMILARITY_THRESHOLD = 0.5
 

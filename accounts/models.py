@@ -2,6 +2,13 @@ from django.contrib.auth.models import User
 from django.db import models
 
 
+class SecurityCounter(models.Model):
+    """Shared, expiring rate counters and short-lived work leases; no raw IPs."""
+    key = models.CharField(max_length=128, primary_key=True)
+    count = models.PositiveIntegerField(default=0)
+    expires_at = models.DateTimeField(db_index=True)
+
+
 FIELD_OF_STUDY_CHOICES = [
     ("Computing/IT",     "Computing / IT"),
     ("Business",         "Business"),

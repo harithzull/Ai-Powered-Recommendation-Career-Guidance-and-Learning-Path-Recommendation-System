@@ -10,7 +10,6 @@ from typing import Union
 
 import numpy as np
 from django.conf import settings
-from sentence_transformers.util import cos_sim
 
 from recommender.embeddings import get_model
 from recommender.models import Career, CareerSkill
@@ -58,6 +57,8 @@ def semantic_skill_match_from_vectors(
     Returns (coverage_score, missing_core_skills) using pre-encoded user vectors.
     Call encode_user_skills() once before the career loop, then pass the result here.
     """
+    from sentence_transformers.util import cos_sim
+
     threshold: float = getattr(settings, "SIMILARITY_THRESHOLD", 0.5)
 
     if isinstance(career, str):

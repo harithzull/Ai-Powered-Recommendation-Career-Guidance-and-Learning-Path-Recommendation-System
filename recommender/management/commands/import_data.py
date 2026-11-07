@@ -1,8 +1,8 @@
 import csv
 from pathlib import Path
-from django.core.management.base import BaseCommand
+from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
-from recommender.models import Career, Skill, CareerSkill
+from recommender.models import Career, Skill, CareerSkill, CachedRecommendation
 
 DATA_DIR = Path(__file__).resolve().parents[3] / "data"
 
@@ -14,11 +14,35 @@ CAREER_SKILLS_CSV = DATA_DIR / "career_skills_clean (1).csv"
 class Command(BaseCommand):
     help = "Import career, skill, and career-skill mapping data from CSV files."
 
+    def add_arguments(self, parser):
+        parser.add_argument("--replace-existing", action="store_true",
+                            help="Replace catalog data; deletes associated roadmaps and progress. Back up first.")
+
+    @transaction.atomic
     def handle(self, *args, **options):
+        if (Career.objects.exists() or Skill.objects.exists()) and not options["replace_existing"]:
+            raise CommandError("Catalog already exists. Back up before using --replace-existing (removes roadmaps and progress).")
+        for path, columns in [
+            (CAREERS_CSV, {"title", "industry", "summary", "description", "work_environment"}),
+            (SKILLS_CSV, {"name", "description", "category"}),
+            (CAREER_SKILLS_CSV, {"career", "skill", "skill_type", "required_level", "importance", "is_core"}),
+        ]:
+            try:
+                with path.open(encoding="utf-8", newline="") as file:
+                    reader = csv.DictReader(file)
+                    if not columns.issubset(reader.fieldnames or []):
+                        raise CommandError(f"Invalid columns in {path.name}")
+                    rows = list(reader)
+                    if not rows or any(any(row.get(column) is None for column in columns) for row in rows):
+                        raise CommandError(f"Empty or malformed data in {path.name}")
+            except (OSError, UnicodeError, csv.Error) as exc:
+                raise CommandError(f"Cannot read catalog file: {path.name}") from exc
+
         self.stdout.write("Clearing existing data...")
         CareerSkill.objects.all().delete()
         Career.objects.all().delete()
         Skill.objects.all().delete()
+        CachedRecommendation.objects.all().delete()
 
         skills_imported = self._import_skills()
         careers_imported = self._import_careers()
