@@ -180,7 +180,7 @@ def get_skills_by_riasec_type(top_n: int = MAX_PILLS_SHOWN) -> dict[str, list[st
 # ── User-facing wrapper (kept for compatibility) ─────────────────────────────
 def get_suggested_skills_for_user(user, top_n: int = MAX_PILLS_SHOWN) -> list[str]:
     from assessment.models import UserResponse
-    from recommender.scoring import normalized_riasec
+    from recommender.scoring import riasec_profile
 
     try:
         response = (
@@ -191,13 +191,10 @@ def get_suggested_skills_for_user(user, top_n: int = MAX_PILLS_SHOWN) -> list[st
     except UserResponse.DoesNotExist:
         return []
 
-    if not response.riasec_answers.exists():
+    if not response.riasec_answers.exists() and not response.active_session_id:
         return []
 
-    profile = normalized_riasec(
-        (a.question.riasec_type, a.rating)
-        for a in response.riasec_answers.all()
-    )
+    profile = riasec_profile(response)
     try:
         field_of_study = response.user.profile.field_of_study
     except AttributeError:

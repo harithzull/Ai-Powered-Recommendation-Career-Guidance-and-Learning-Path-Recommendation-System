@@ -38,7 +38,7 @@ class RecommendationUnavailable(Exception):
 def _signature(user):
     from assessment.models import UserResponse
     from accounts.models import UserProfile
-    response = UserResponse.objects.filter(user=user).values("submitted_at", "completed_at").first()
+    response = UserResponse.objects.filter(user=user).values("submitted_at", "completed_at", "active_session_id").first()
     profile = UserProfile.objects.filter(user=user).values("field_of_study", "experience_level").first()
     payload = {"version": 1, "response": response, "profile": profile,
                "weights": settings.RECOMMENDATION_WEIGHTS,

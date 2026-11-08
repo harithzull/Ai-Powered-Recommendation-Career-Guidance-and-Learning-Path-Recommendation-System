@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}Review your answers · CareerCoach{% endblock %}
+{% block page_title %}Review your answers{% endblock %}
+{% block content %}
+<p>{{ session.get_mode_display }} · {{ session.bank.version }}. You can revise responses until you finish.</p>
+{% if error %}<p role="alert" class="a-alert err">{{ error }}</p>{% endif %}
+{% if missing %}<p class="a-alert" role="status">{{ missing }} question{{ missing|pluralize }} still need an answer. Every question is required.</p>{% endif %}
+<ol class="a-panel" style="padding:22px 22px 22px 46px">
+{% for row in rows %}<li style="margin-bottom:16px">{{ row.item.text }}<br><strong>{{ row.label }}</strong> · <a href="{% url 'assessment:session' session.pk %}?q={{ row.number }}">Review question {{ row.number }}</a></li>{% endfor %}
+</ol>
+<form method="post" style="margin-top:20px">
+  {% csrf_token %}<input type="hidden" name="revision" value="{{ session.revision }}">
+  <button type="submit" class="a-btn a-btn-green" {% if missing %}disabled{% endif %}>Finish assessment</button>
+</form>
+<p style="margin-top:16px">Finishing freezes this result. A retake creates a new assessment and keeps previous results and saved roadmap progress.</p>
+{% endblock %}

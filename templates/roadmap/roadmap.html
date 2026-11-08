@@ -73,6 +73,7 @@
 {% endblock %}
 
 {% block content %}
+{% if older_assessment %}<p class="a-alert" role="status">This saved plan predates your current interest assessment. Its steps and your progress have been preserved; review it alongside your latest results.</p>{% endif %}
 {% if progress_pct == 100 %}
 <div class="a-alert ok" style="margin-bottom:24px">
   <i class="bi bi-trophy-fill"></i>

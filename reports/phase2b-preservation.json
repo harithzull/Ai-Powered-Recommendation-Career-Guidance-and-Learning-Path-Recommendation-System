@@ -1,0 +1,99 @@
+{
+  "backup": "db.sqlite3.phase2b-backup-20261108071152",
+  "original_application_tables": {
+    "assessment_riasecquestion": {
+      "before_count": 42,
+      "after_count": 42,
+      "original_fields_unchanged": true
+    },
+    "assessment_userresponse": {
+      "before_count": 19,
+      "after_count": 19,
+      "original_fields_unchanged": true
+    },
+    "assessment_skillrating": {
+      "before_count": 77,
+      "after_count": 77,
+      "original_fields_unchanged": true
+    },
+    "assessment_riasecanswer": {
+      "before_count": 222,
+      "after_count": 222,
+      "original_fields_unchanged": true
+    },
+    "accounts_userprofile": {
+      "before_count": 10,
+      "after_count": 10,
+      "original_fields_unchanged": true
+    },
+    "roadmap_roadmapprogress": {
+      "before_count": 15,
+      "after_count": 15,
+      "original_fields_unchanged": true
+    },
+    "roadmap_savedroadmap": {
+      "before_count": 3,
+      "after_count": 3,
+      "original_fields_unchanged": true
+    },
+    "accounts_securitycounter": {
+      "before_count": 1,
+      "after_count": 1,
+      "original_fields_unchanged": true
+    },
+    "recommender_cachedrecommendation": {
+      "before_count": 1,
+      "after_count": 1,
+      "original_fields_unchanged": true
+    },
+    "recommender_careerfamily": {
+      "before_count": 16,
+      "after_count": 16,
+      "original_fields_unchanged": true
+    },
+    "recommender_career": {
+      "before_count": 240,
+      "after_count": 240,
+      "original_fields_unchanged": true
+    },
+    "recommender_careerskill": {
+      "before_count": 15727,
+      "after_count": 15727,
+      "original_fields_unchanged": true
+    },
+    "recommender_skill": {
+      "before_count": 4358,
+      "after_count": 4358,
+      "original_fields_unchanged": true
+    },
+    "recommender_careerenrichment": {
+      "before_count": 28,
+      "after_count": 28,
+      "original_fields_unchanged": true
+    },
+    "recommender_skillalias": {
+      "before_count": 2,
+      "after_count": 2,
+      "original_fields_unchanged": true
+    }
+  },
+  "legacy_archives": {
+    "abandoned": 3,
+    "completed": 16
+  },
+  "active_item_counts": {
+    "A": 6,
+    "C": 6,
+    "E": 6,
+    "I": 6,
+    "R": 6,
+    "S": 6
+  },
+  "source_and_vector_files_unchanged": {
+    "careers_clean (1).csv": true,
+    "career_skills_clean (1).csv": true,
+    "skills_clean (1).csv": true,
+    "skill_names.json": true,
+    "skill_vectors.npy": true
+  }
+}

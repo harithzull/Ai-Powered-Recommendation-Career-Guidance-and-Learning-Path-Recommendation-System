@@ -87,14 +87,14 @@
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--moss)" stroke-width="1.8"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/><path d="M9 12h6M9 16h4"/></svg>
     </div>
     <h3>{% if has_assessment %}Retake Assessment{% else %}Career Assessment{% endif %}</h3>
-    <p>{% if has_assessment %}Update your interests and skill ratings to refresh your career matches.{% else %}12-question interest quiz + skill rating to unlock your personalised career recommendations.{% endif %}</p>
+    <p>{% if has_assessment %}Explore your interests again while keeping your previous results and saved plans.{% else %}Choose 18 or 36 activity questions, then review your skills for career exploration.{% endif %}</p>
     {% if has_assessment %}
     <form method="post" action="{% url 'assessment:retake' %}">
       {% csrf_token %}
       <button type="submit" class="a-btn a-btn-green" style="font-size:13px;padding:8px 16px">Retake quiz</button>
     </form>
     {% else %}
-    <a href="/assessment/background/" class="a-btn a-btn-green" style="font-size:13px;padding:8px 16px">Start now</a>
+    <a href="/assessment/start/" class="a-btn a-btn-green" style="font-size:13px;padding:8px 16px">Start now</a>
     {% endif %}
   </div>
 
