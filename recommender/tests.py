@@ -161,15 +161,14 @@ class MatchingTests(UserDataTestCase):
 
 
 class ImportSafetyTests(UserDataTestCase):
-    def test_existing_catalog_requires_explicit_replacement(self):
+    def test_destructive_catalog_replacement_is_rejected(self):
         with self.assertRaises(CommandError):
-            call_command("import_data", stdout=StringIO())
+            call_command("import_data", replace_existing=True, stdout=StringIO())
         self.assertTrue(Career.objects.filter(pk=self.career.pk).exists())
 
     def test_invalid_files_are_rejected_before_deletion(self):
-        with patch("recommender.management.commands.import_data.CAREERS_CSV", new=Path("missing.csv")):
-            with self.assertRaises(CommandError):
-                call_command("import_data", replace_existing=True, stdout=StringIO())
+        with self.assertRaises(CommandError):
+            call_command("import_data", data_dir=Path("missing-dataset-directory"), stdout=StringIO())
         self.assertTrue(Career.objects.filter(pk=self.career.pk).exists())
 
     def test_admin_catalog_edit_invalidates_recommendations(self):
@@ -182,7 +181,9 @@ class ImportSafetyTests(UserDataTestCase):
         self.assertFalse(CachedRecommendation.objects.exists())
 
     def test_import_failure_rolls_back_catalog_and_derived_data(self):
-        with patch("recommender.management.commands.import_data.Command._import_skills", side_effect=ValueError("bad row")):
+        from recommender.data_import import import_tables
+        from recommender.test_knowledge_base import small_tables
+        with patch("recommender.data_import.Skill.save", side_effect=ValueError("bad row")):
             with self.assertRaises(ValueError):
-                call_command("import_data", replace_existing=True, stdout=StringIO())
+                import_tables(small_tables())
         self.assertTrue(Career.objects.filter(pk=self.career.pk).exists())

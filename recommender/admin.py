@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Career, Skill, CareerSkill, CachedRecommendation
+from .models import Career, Skill, CareerSkill, CachedRecommendation, CareerFamily, CareerEnrichment, SkillAlias
 
 
 class CatalogCacheInvalidationMixin:
@@ -29,17 +29,19 @@ class CareerSkillInline(admin.TabularInline):
 
 @admin.register(Career)
 class CareerAdmin(CatalogCacheInvalidationMixin, admin.ModelAdmin):
-    list_display = ("title", "industry", "work_environment")
-    list_filter = ("industry", "work_environment")
-    search_fields = ("title", "industry")
+    list_display = ("title", "industry", "source_taxonomy", "quality_status")
+    list_filter = ("industry", "source_taxonomy", "quality_status")
+    search_fields = ("title", "source_title", "esco_uri")
+    readonly_fields = ("source_metadata",)
     inlines = [CareerSkillInline]
 
 
 @admin.register(Skill)
 class SkillAdmin(CatalogCacheInvalidationMixin, admin.ModelAdmin):
-    list_display = ("name", "category")
-    list_filter = ("category",)
-    search_fields = ("name",)
+    list_display = ("name", "category", "source_taxonomy", "quality_status")
+    list_filter = ("category", "source_taxonomy", "quality_status")
+    search_fields = ("name", "source_name", "esco_uri")
+    readonly_fields = ("source_metadata",)
 
 
 @admin.register(CareerSkill)
@@ -48,3 +50,27 @@ class CareerSkillAdmin(CatalogCacheInvalidationMixin, admin.ModelAdmin):
     list_filter = ("skill_type", "required_level", "is_core")
     search_fields = ("career__title", "skill__name")
     autocomplete_fields = ["career", "skill"]
+    readonly_fields = ("source_metadata",)
+
+
+@admin.register(CareerFamily)
+class CareerFamilyAdmin(admin.ModelAdmin):
+    list_display = ("name", "slug")
+    search_fields = ("name",)
+    prepopulated_fields = {"slug": ("name",)}
+
+
+@admin.register(CareerEnrichment)
+class CareerEnrichmentAdmin(admin.ModelAdmin):
+    list_display = ("career", "family", "review_status")
+    list_filter = ("family", "review_status")
+    search_fields = ("career__title", "specialization")
+    autocomplete_fields = ("career", "family")
+
+
+@admin.register(SkillAlias)
+class SkillAliasAdmin(CatalogCacheInvalidationMixin, admin.ModelAdmin):
+    list_display = ("name", "skill", "kind", "review_status")
+    list_filter = ("kind", "review_status")
+    search_fields = ("name", "skill__name")
+    autocomplete_fields = ("skill",)

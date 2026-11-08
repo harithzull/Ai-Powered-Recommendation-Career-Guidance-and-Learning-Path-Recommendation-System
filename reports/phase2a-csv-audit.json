@@ -1,0 +1,678 @@
+{
+  "schema_version": 1,
+  "input_kind": "legacy_csv",
+  "source_taxonomy": "esco",
+  "source_version": null,
+  "counts": {
+    "careers": 240,
+    "skills": 4358,
+    "relationships": 15727
+  },
+  "finding_counts": {
+    "error": 0,
+    "review": 91,
+    "optional": 0,
+    "unknown": 4845
+  },
+  "statistics": {
+    "industries": {
+      "Healthcare": 20,
+      "Creative & Design": 20,
+      "Technology": 20,
+      "Finance": 20,
+      "Law": 20,
+      "Business": 20,
+      "Data & AI": 20,
+      "Engineering": 20,
+      "Education": 20,
+      "Research": 20,
+      "Marketing": 20,
+      "Communication": 20
+    },
+    "skill_categories": {
+      "knowledge": 1407,
+      "skill/competence": 2950,
+      "": 1
+    },
+    "shortened_summary_prefixes": 165
+  },
+  "files": {
+    "careers": {
+      "filename": "careers_clean (1).csv",
+      "sha256": "41524bc8d642a183092db14f00c70a19158aef24b3af6af755af11d3005fcc9b",
+      "columns": [
+        "title",
+        "industry",
+        "summary",
+        "description",
+        "work_environment"
+      ]
+    },
+    "skills": {
+      "filename": "skills_clean (1).csv",
+      "sha256": "bec12106f2a578126e8d7cce6ad919690ff191da49f440541e5d5a583aa6f4e2",
+      "columns": [
+        "name",
+        "description",
+        "category"
+      ]
+    },
+    "relationships": {
+      "filename": "career_skills_clean (1).csv",
+      "sha256": "e33b44e1dd2e54a2ac57bf036931be47eef0f522214bdd5e5b56e9d96c3289c9",
+      "columns": [
+        "career",
+        "skill",
+        "skill_type",
+        "required_level",
+        "importance",
+        "is_core"
+      ]
+    }
+  },
+  "findings": [
+    {
+      "code": "inconsistent_whitespace",
+      "category": "review",
+      "table": "careers",
+      "count": 1,
+      "records": [
+        {
+          "line": 89,
+          "title": "health safety and environmental manager "
+        }
+      ],
+      "examples_truncated": false,
+      "message": "Label contains leading, trailing, or repeated whitespace.",
+      "suggested_action": "Normalize the lookup key; preserve exported text in provenance."
+    },
+    {
+      "code": "missing_source_identifier",
+      "category": "unknown",
+      "table": "careers",
+      "count": 240,
+      "records": [
+        {
+          "line": 2,
+          "title": "physiotherapist"
+        },
+        {
+          "line": 3,
+          "title": "hardware and paint specialised seller"
+        },
+        {
+          "line": 4,
+          "title": "ICT security administrator"
+        },
+        {
+          "line": 5,
+          "title": "accounting manager"
+        },
+        {
+          "line": 6,
+          "title": "criminologist"
+        },
+        {
+          "line": 7,
+          "title": "performance lighting designer"
+        },
+        {
+          "line": 9,
+          "title": "puppet designer"
+        },
+        {
+          "line": 10,
+          "title": "spa manager"
+        },
+        {
+          "line": 11,
+          "title": "branch manager"
+        },
+        {
+          "line": 12,
+          "title": "paramedic in emergency responses"
+        },
+        {
+          "line": 13,
+          "title": "digital forensics expert"
+        },
+        {
+          "line": 14,
+          "title": "medical device engineer"
+        },
+        {
+          "line": 18,
+          "title": "ICT security engineer"
+        },
+        {
+          "line": 19,
+          "title": "ICT teacher secondary school"
+        },
+        {
+          "line": 20,
+          "title": "chemist"
+        },
+        {
+          "line": 21,
+          "title": "teacher of talented and gifted students"
+        },
+        {
+          "line": 22,
+          "title": "sporting accessories specialised seller"
+        },
+        {
+          "line": 23,
+          "title": "kinesiologist"
+        },
+        {
+          "line": 24,
+          "title": "environmental scientist"
+        },
+        {
+          "line": 25,
+          "title": "sociologist"
+        }
+      ],
+      "examples_truncated": true,
+      "message": "The export does not provide an ESCO URI.",
+      "suggested_action": "Leave unknown; recover only from an authoritative, reviewed mapping."
+    },
+    {
+      "code": "low_information_description",
+      "category": "review",
+      "table": "skills",
+      "count": 74,
+      "records": [
+        {
+          "line": 10,
+          "name": "kinetics"
+        },
+        {
+          "line": 120,
+          "name": "stock shelves"
+        },
+        {
+          "line": 190,
+          "name": "fraud detection"
+        },
+        {
+          "line": 323,
+          "name": "use specialised design software"
+        },
+        {
+          "line": 358,
+          "name": "plot lighting states"
+        },
+        {
+          "line": 374,
+          "name": "keep personal administration"
+        },
+        {
+          "line": 397,
+          "name": "schedule recreation facilities"
+        },
+        {
+          "line": 404,
+          "name": "discharge employees"
+        },
+        {
+          "line": 426,
+          "name": "manage budgets"
+        },
+        {
+          "line": 430,
+          "name": "manage profitability"
+        },
+        {
+          "line": 436,
+          "name": "administer appointments"
+        },
+        {
+          "line": 726,
+          "name": "perform classroom management"
+        },
+        {
+          "line": 848,
+          "name": "attend sports training"
+        },
+        {
+          "line": 852,
+          "name": "perform lectures"
+        },
+        {
+          "line": 873,
+          "name": "manage environmental management system"
+        },
+        {
+          "line": 897,
+          "name": "gather data"
+        },
+        {
+          "line": 963,
+          "name": "advise customers on clothing accessories"
+        },
+        {
+          "line": 1190,
+          "name": "arrange equipment repairs"
+        },
+        {
+          "line": 1307,
+          "name": "develop creative ideas"
+        },
+        {
+          "line": 1310,
+          "name": "project management principles"
+        }
+      ],
+      "examples_truncated": true,
+      "message": "Fewer than eight words: a review heuristic, not proof of poor quality.",
+      "suggested_action": "Review the full description in context."
+    },
+    {
+      "code": "inconsistent_whitespace",
+      "category": "review",
+      "table": "skills",
+      "count": 1,
+      "records": [
+        {
+          "line": 3543,
+          "name": "advise  customers on audiovisual equipment installation"
+        }
+      ],
+      "examples_truncated": false,
+      "message": "Label contains leading, trailing, or repeated whitespace.",
+      "suggested_action": "Normalize the lookup key; preserve exported text in provenance."
+    },
+    {
+      "code": "capitalization_review",
+      "category": "review",
+      "table": "skills",
+      "count": 2,
+      "records": [
+        {
+          "line": 561,
+          "name": "OWASP ZAP"
+        },
+        {
+          "line": 1016,
+          "name": "ASP.NET"
+        }
+      ],
+      "examples_truncated": false,
+      "message": "All-uppercase label may be an acronym or inconsistent capitalization.",
+      "suggested_action": "Review; do not title-case acronyms automatically."
+    },
+    {
+      "code": "missing_source_identifier",
+      "category": "unknown",
+      "table": "skills",
+      "count": 4358,
+      "records": [
+        {
+          "line": 2,
+          "name": "orthopaedic manual physiotherapy"
+        },
+        {
+          "line": 3,
+          "name": "medical terminology"
+        },
+        {
+          "line": 4,
+          "name": "emergency surgery"
+        },
+        {
+          "line": 5,
+          "name": "orthopaedics"
+        },
+        {
+          "line": 6,
+          "name": "general medicine"
+        },
+        {
+          "line": 7,
+          "name": "surgery"
+        },
+        {
+          "line": 8,
+          "name": "human physiology"
+        },
+        {
+          "line": 9,
+          "name": "geriatrics"
+        },
+        {
+          "line": 10,
+          "name": "kinetics"
+        },
+        {
+          "line": 11,
+          "name": "neurology"
+        },
+        {
+          "line": 12,
+          "name": "pharmacology"
+        },
+        {
+          "line": 13,
+          "name": "physics"
+        },
+        {
+          "line": 14,
+          "name": "obstetrics and gynaecology"
+        },
+        {
+          "line": 15,
+          "name": "paediatrics"
+        },
+        {
+          "line": 16,
+          "name": "rehabilitation"
+        },
+        {
+          "line": 17,
+          "name": "sociology"
+        },
+        {
+          "line": 18,
+          "name": "biomechanics"
+        },
+        {
+          "line": 19,
+          "name": "therapeutic massage"
+        },
+        {
+          "line": 20,
+          "name": "human anatomy"
+        },
+        {
+          "line": 21,
+          "name": "manage healthcare staff"
+        }
+      ],
+      "examples_truncated": true,
+      "message": "The export does not provide an ESCO URI.",
+      "suggested_action": "Leave unknown; recover only from an authoritative, reviewed mapping."
+    },
+    {
+      "code": "classification_review",
+      "category": "review",
+      "table": "careers",
+      "count": 10,
+      "records": [
+        {
+          "line": 3,
+          "title": "hardware and paint specialised seller",
+          "industry": "Creative & Design",
+          "reason": "Retail sales is questionable under Creative & Design."
+        },
+        {
+          "line": 29,
+          "title": "data protection officer",
+          "industry": "Data & AI",
+          "reason": "Governance/legal responsibilities span several families."
+        },
+        {
+          "line": 39,
+          "title": "meteorologist",
+          "industry": "Data & AI",
+          "reason": "Scientific occupation needs review under Data & AI."
+        },
+        {
+          "line": 53,
+          "title": "food analyst",
+          "industry": "Finance",
+          "reason": "Laboratory/food analysis needs review under Finance."
+        },
+        {
+          "line": 88,
+          "title": "hardware and paint shop manager",
+          "industry": "Creative & Design",
+          "reason": "Retail management is questionable under Creative & Design."
+        },
+        {
+          "line": 108,
+          "title": "office clerk",
+          "industry": "Law",
+          "reason": "General clerical work is not intrinsically Law."
+        },
+        {
+          "line": 180,
+          "title": "aviation inspector",
+          "industry": "Finance",
+          "reason": "Aviation inspection needs review under Finance."
+        },
+        {
+          "line": 194,
+          "title": "billing clerk",
+          "industry": "Law",
+          "reason": "Billing is not intrinsically Law."
+        },
+        {
+          "line": 243,
+          "title": "landscape gardener",
+          "industry": "Creative & Design",
+          "reason": "Horticultural work needs review under Creative & Design."
+        },
+        {
+          "line": 259,
+          "title": "industrial quality manager",
+          "industry": "Finance",
+          "reason": "Industrial quality management needs review under Finance."
+        }
+      ],
+      "examples_truncated": false,
+      "message": "Explicit legacy classification review list; no source classification is overwritten.",
+      "suggested_action": "Review activities and descriptions; curate a separate CareerCoach family."
+    },
+    {
+      "code": "unknown_category",
+      "category": "unknown",
+      "table": "skills",
+      "count": 1,
+      "records": [
+        {
+          "line": 152,
+          "name": "implement cloud security and compliance"
+        }
+      ],
+      "examples_truncated": false,
+      "message": "Skill/knowledge category is not provided.",
+      "suggested_action": "Recover category; do not infer a practical skill from knowledge."
+    },
+    {
+      "code": "overlapping_titles",
+      "category": "review",
+      "table": "careers",
+      "count": 3,
+      "records": [
+        {
+          "first": {
+            "line": 19,
+            "title": "ICT teacher secondary school"
+          },
+          "second": {
+            "line": 253,
+            "title": "drama teacher secondary school"
+          }
+        },
+        {
+          "first": {
+            "line": 33,
+            "title": "offshore renewable energy technician"
+          },
+          "second": {
+            "line": 207,
+            "title": "offshore renewable energy engineer"
+          }
+        },
+        {
+          "first": {
+            "line": 59,
+            "title": "computer hardware engineering technician"
+          },
+          "second": {
+            "line": 201,
+            "title": "computer hardware test technician"
+          }
+        }
+      ],
+      "examples_truncated": false,
+      "message": "Title-token overlap >= 0.6; specializations may be legitimately distinct.",
+      "suggested_action": "Review descriptions; never auto-merge."
+    },
+    {
+      "code": "unverified_work_environment",
+      "category": "unknown",
+      "table": "careers",
+      "count": 240,
+      "records": [
+        {
+          "line": 2,
+          "title": "physiotherapist"
+        },
+        {
+          "line": 3,
+          "title": "hardware and paint specialised seller"
+        },
+        {
+          "line": 4,
+          "title": "ICT security administrator"
+        },
+        {
+          "line": 5,
+          "title": "accounting manager"
+        },
+        {
+          "line": 6,
+          "title": "criminologist"
+        },
+        {
+          "line": 7,
+          "title": "performance lighting designer"
+        },
+        {
+          "line": 9,
+          "title": "puppet designer"
+        },
+        {
+          "line": 10,
+          "title": "spa manager"
+        },
+        {
+          "line": 11,
+          "title": "branch manager"
+        },
+        {
+          "line": 12,
+          "title": "paramedic in emergency responses"
+        },
+        {
+          "line": 13,
+          "title": "digital forensics expert"
+        },
+        {
+          "line": 14,
+          "title": "medical device engineer"
+        },
+        {
+          "line": 18,
+          "title": "ICT security engineer"
+        },
+        {
+          "line": 19,
+          "title": "ICT teacher secondary school"
+        },
+        {
+          "line": 20,
+          "title": "chemist"
+        },
+        {
+          "line": 21,
+          "title": "teacher of talented and gifted students"
+        },
+        {
+          "line": 22,
+          "title": "sporting accessories specialised seller"
+        },
+        {
+          "line": 23,
+          "title": "kinesiologist"
+        },
+        {
+          "line": 24,
+          "title": "environmental scientist"
+        },
+        {
+          "line": 25,
+          "title": "sociologist"
+        }
+      ],
+      "examples_truncated": true,
+      "message": "Work-environment labels have no identified original source; all current records use hybrid.",
+      "suggested_action": "Preserve legacy display behavior but do not present this as verified Malaysian market evidence."
+    },
+    {
+      "code": "missing_relationship_metadata",
+      "category": "unknown",
+      "table": "relationships",
+      "count": 4,
+      "records": [
+        {
+          "line": 150,
+          "career": "ICT security administrator",
+          "skill": "implement cloud security and compliance"
+        },
+        {
+          "line": 2705,
+          "career": "chief ICT security officer",
+          "skill": "implement cloud security and compliance"
+        },
+        {
+          "line": 3101,
+          "career": "cloud engineer",
+          "skill": "implement cloud security and compliance"
+        },
+        {
+          "line": 7092,
+          "career": "ICT security manager",
+          "skill": "implement cloud security and compliance"
+        }
+      ],
+      "examples_truncated": false,
+      "message": "Some legacy relationship metadata is missing.",
+      "suggested_action": "Leave authoritative metadata unknown; recover evidence rather than inventing values."
+    },
+    {
+      "code": "unverified_legacy_estimates",
+      "category": "unknown",
+      "table": "relationships",
+      "count": 2,
+      "records": [
+        {
+          "pattern": [
+            "2",
+            "basic",
+            "False"
+          ],
+          "relationship_count": 6188
+        },
+        {
+          "pattern": [
+            "5",
+            "intermediate",
+            "True"
+          ],
+          "relationship_count": 9539
+        }
+      ],
+      "examples_truncated": false,
+      "message": "Numeric weights and proficiency values have no documented original ESCO provenance.",
+      "suggested_action": "Keep legacy behavior; leave authoritative importance/proficiency null."
+    }
+  ],
+  "limitations": [
+    "Heuristics flag review candidates, not confirmed classification errors.",
+    "Original ESCO version, URIs, extraction process, and transformation scripts are unknown.",
+    "Counts are finding instances, not unique affected records."
+  ]
+}

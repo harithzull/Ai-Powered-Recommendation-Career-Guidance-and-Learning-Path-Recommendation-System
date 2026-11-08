@@ -14,6 +14,7 @@ from .models import RIASECAnswer, RIASECQuestion, SkillRating, UserResponse
 from .suggested_skills import get_suggested_skills
 from recommender.scoring import normalized_riasec
 from recommender.models import Skill
+from recommender.aliases import search_skill_names
 
 RATING_OPTIONS = [
     (1, "1 – Strongly Disagree"),
@@ -231,11 +232,7 @@ def skill_search(request):
         return JsonResponse({"error": "Search query is too long."}, status=400)
     if len(q) < 2:
         return JsonResponse({"results": []})
-    names = list(
-        Skill.objects.filter(name__icontains=q)
-        .order_by("name")
-        .values_list("name", flat=True)[:10]
-    )
+    names = search_skill_names(q)
     return JsonResponse({"results": names})
 
 

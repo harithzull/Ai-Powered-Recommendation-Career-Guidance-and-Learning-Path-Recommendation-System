@@ -1,137 +1,53 @@
-import csv
+"""Backward-compatible command name with non-destructive import semantics."""
+import json
 from pathlib import Path
+
+from django.conf import settings
+from django.core.exceptions import ValidationError
 from django.core.management.base import BaseCommand, CommandError
-from django.db import transaction
-from recommender.models import Career, Skill, CareerSkill, CachedRecommendation
+from django.db import IntegrityError
 
-DATA_DIR = Path(__file__).resolve().parents[3] / "data"
-
-CAREERS_CSV = DATA_DIR / "careers_clean (1).csv"
-SKILLS_CSV = DATA_DIR / "skills_clean (1).csv"
-CAREER_SKILLS_CSV = DATA_DIR / "career_skills_clean (1).csv"
+from recommender.data_import import ImportRejected, import_tables
+from recommender.datasets import read_tables
 
 
 class Command(BaseCommand):
-    help = "Import career, skill, and career-skill mapping data from CSV files."
+    help = "Validate and upsert ESCO-derived export records, preserving IDs and enrichment. Never deletes catalog rows."
 
     def add_arguments(self, parser):
-        parser.add_argument("--replace-existing", action="store_true",
-                            help="Replace catalog data; deletes associated roadmaps and progress. Back up first.")
+        parser.add_argument("--data-dir", type=Path, default=settings.BASE_DIR / "data")
+        parser.add_argument("--dry-run", action="store_true")
+        parser.add_argument("--source-version", help="Only supply a version verified from the original extraction.")
+        parser.add_argument("--format", choices=["text", "json"], default="text")
+        parser.add_argument("--output", type=Path)
+        parser.add_argument("--replace-existing", action="store_true", help="Removed unsafe option: always rejected.")
 
-    @transaction.atomic
     def handle(self, *args, **options):
-        if (Career.objects.exists() or Skill.objects.exists()) and not options["replace_existing"]:
-            raise CommandError("Catalog already exists. Back up before using --replace-existing (removes roadmaps and progress).")
-        for path, columns in [
-            (CAREERS_CSV, {"title", "industry", "summary", "description", "work_environment"}),
-            (SKILLS_CSV, {"name", "description", "category"}),
-            (CAREER_SKILLS_CSV, {"career", "skill", "skill_type", "required_level", "importance", "is_core"}),
-        ]:
-            try:
-                with path.open(encoding="utf-8", newline="") as file:
-                    reader = csv.DictReader(file)
-                    if not columns.issubset(reader.fieldnames or []):
-                        raise CommandError(f"Invalid columns in {path.name}")
-                    rows = list(reader)
-                    if not rows or any(any(row.get(column) is None for column in columns) for row in rows):
-                        raise CommandError(f"Empty or malformed data in {path.name}")
-            except (OSError, UnicodeError, csv.Error) as exc:
-                raise CommandError(f"Cannot read catalog file: {path.name}") from exc
-
-        self.stdout.write("Clearing existing data...")
-        CareerSkill.objects.all().delete()
-        Career.objects.all().delete()
-        Skill.objects.all().delete()
-        CachedRecommendation.objects.all().delete()
-
-        skills_imported = self._import_skills()
-        careers_imported = self._import_careers()
-        mappings_imported, unmatched = self._import_career_skills()
-
-        self.stdout.write(self.style.SUCCESS(
-            f"\n=== Import complete ===\n"
-            f"  Careers  : {careers_imported}\n"
-            f"  Skills   : {skills_imported}\n"
-            f"  Mappings : {mappings_imported}\n"
-        ))
-
-        if unmatched:
-            self.stdout.write(self.style.WARNING(
-                f"  WARNING: {len(unmatched)} career_skills rows had unresolved references:"
-            ))
-            for row in unmatched[:20]:
-                self.stdout.write(f"    career='{row['career']}' skill='{row['skill']}'")
-            if len(unmatched) > 20:
-                self.stdout.write(f"    ... and {len(unmatched) - 20} more")
+        if options["replace_existing"]:
+            raise CommandError("Destructive replacement is no longer supported. Use the idempotent importer, optionally with --dry-run.")
+        failure = None
+        try:
+            report = import_tables(read_tables(options["data_dir"]), dry_run=options["dry_run"], source_version=options["source_version"])
+        except ImportRejected as exc:
+            report, failure = exc.report, str(exc)
+        except (ValidationError, IntegrityError) as exc:
+            # All import writes run in one atomic block and have rolled back.
+            report = {"errors": [{"message": str(exc)}], "rolled_back": True}
+            failure = "Import validation failed; the complete transaction was rolled back."
+        if options["format"] == "json":
+            result = json.dumps(report, ensure_ascii=False, indent=2)
         else:
-            self.stdout.write(self.style.SUCCESS("  Unmatched: 0"))
-
-    @transaction.atomic
-    def _import_skills(self):
-        self.stdout.write("Importing skills...")
-        skills = []
-        with open(SKILLS_CSV, encoding="utf-8") as f:
-            for row in csv.DictReader(f):
-                skills.append(Skill(
-                    name=row["name"].strip(),
-                    description=row["description"].strip(),
-                    category=row["category"].strip(),
-                ))
-        Skill.objects.bulk_create(skills, ignore_conflicts=True)
-        count = Skill.objects.count()
-        self.stdout.write(f"  {count} skills loaded.")
-        return count
-
-    @transaction.atomic
-    def _import_careers(self):
-        self.stdout.write("Importing careers...")
-        careers = []
-        with open(CAREERS_CSV, encoding="utf-8") as f:
-            for row in csv.DictReader(f):
-                careers.append(Career(
-                    title=row["title"].strip(),
-                    industry=row["industry"].strip(),
-                    summary=row["summary"].strip(),
-                    description=row["description"].strip(),
-                    work_environment=row["work_environment"].strip(),
-                ))
-        Career.objects.bulk_create(careers, ignore_conflicts=True)
-        count = Career.objects.count()
-        self.stdout.write(f"  {count} careers loaded.")
-        return count
-
-    @transaction.atomic
-    def _import_career_skills(self):
-        self.stdout.write("Importing career-skill mappings...")
-
-        career_map = {c.title: c for c in Career.objects.all()}
-        skill_map = {s.name: s for s in Skill.objects.all()}
-
-        mappings = []
-        unmatched = []
-
-        with open(CAREER_SKILLS_CSV, encoding="utf-8") as f:
-            for row in csv.DictReader(f):
-                career_title = row["career"].strip()
-                skill_name = row["skill"].strip()
-
-                career = career_map.get(career_title)
-                skill = skill_map.get(skill_name)
-
-                if career is None or skill is None:
-                    unmatched.append(row)
-                    continue
-
-                mappings.append(CareerSkill(
-                    career=career,
-                    skill=skill,
-                    skill_type=row["skill_type"].strip(),
-                    required_level=row["required_level"].strip(),
-                    importance=int(row["importance"]) if row["importance"].strip() else 0,
-                    is_core=row["is_core"].strip().lower() == "true",
-                ))
-
-        CareerSkill.objects.bulk_create(mappings, ignore_conflicts=True)
-        count = CareerSkill.objects.count()
-        self.stdout.write(f"  {count} mappings loaded.")
-        return count, unmatched
+            lines = ["CareerCoach import: " + ("DRY RUN (rolled back)" if options["dry_run"] else "non-destructive upsert")]
+            for kind, counts in report.get("counts", {}).items():
+                lines.append(kind + ": " + ", ".join(f"{key}={value}" for key, value in counts.items()))
+            lines += ["ERROR: " + json.dumps(error, ensure_ascii=False) for error in report.get("errors", [])]
+            if report.get("embedding_rebuild_required"):
+                lines.append("New canonical skills were inserted: build_skill_vectors is required before using them in matching.")
+            result = "\n".join(lines)
+        if options["output"]:
+            options["output"].parent.mkdir(parents=True, exist_ok=True)
+            options["output"].write_text(result + "\n", encoding="utf-8")
+        else:
+            self.stdout.write(result)
+        if failure:
+            raise CommandError(failure)

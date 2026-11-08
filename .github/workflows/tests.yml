@@ -50,6 +50,7 @@ jobs:
         run: |
           python manage.py check
           python manage.py makemigrations --check --dry-run
+          python manage.py audit_career_data --fail-on-errors
       - name: Run offline tests
         run: python manage.py test --verbosity 2
       - name: Check production settings
