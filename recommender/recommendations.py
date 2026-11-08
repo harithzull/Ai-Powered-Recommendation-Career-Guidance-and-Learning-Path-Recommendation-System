@@ -14,8 +14,8 @@ from recommender.scoring import background_score, interest_score, riasec_profile
 def _user_skill_texts(response: UserResponse) -> list[str]:
     """
     Build the list of skill strings to encode for the user.
-    Each rated skill is repeated by its rating value so higher-rated skills
-    have proportionally more influence on the semantic match.
+    Legacy repetitions are retained for reproducibility; repeating an identical
+    vector does not affect maximum-cosine matching. V2 deduplicates instead.
     Free-text skills (unrated) are included once each.
     Works for both the old fixed-skill format and the new adaptive pill format.
     """
@@ -35,6 +35,15 @@ def _user_skill_texts(response: UserResponse) -> list[str]:
 
 
 def get_recommendations(user: User, top_n: int = 5) -> list[dict]:
+    from recommender.engine.config import configuration
+    config = configuration()
+    if config.version == 'careercoach-explainable-v2.0':
+        from recommender.engine.pipeline import recommend
+        return recommend(user, top_n)
+    return legacy_recommendations(user, top_n)
+
+
+def legacy_recommendations(user: User, top_n: int = 5) -> list[dict]:
     """
     Return a ranked list of up to `top_n` career recommendations for `user`.
 

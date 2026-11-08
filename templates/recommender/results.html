@@ -42,9 +42,11 @@
 
 {% block content %}
 <p style="color:var(--muted);font-size:14px;margin-bottom:24px">
-  Your top matches, ranked by a blend of interest alignment (45%), skill coverage (40%), and background fit (15%).
+  Your top matches combine interest, skill coverage, and education context using the configured weights.
+  Ranking points are not probabilities of career success.
   Retake the assessment any time using the button below.
 </p>
+<p><a href="{% url 'recommender:history' %}">Recommendation history</a></p>
 
 <div class="match-grid">
 {% for rec in recommendations %}
@@ -60,21 +62,30 @@
 
   <div class="fit">
     <div class="fit-bar"><i data-fit="{{ rec.final_score }}"></i></div>
-    <b>{{ rec.final_score }}%</b>
+    <b>{{ rec.final_score }} points</b>
   </div>
 
   <div class="score-row">
-    <div class="score-cell"><div class="sc-val">{{ rec.interest_pct }}%</div><div class="sc-lbl">Interest</div></div>
-    <div class="score-cell"><div class="sc-val">{{ rec.skill_pct }}%</div><div class="sc-lbl">Skill</div></div>
-    <div class="score-cell"><div class="sc-val">{{ rec.background_pct }}%</div><div class="sc-lbl">Background</div></div>
+    <div class="score-cell"><div class="sc-val">{% if rec.components and not rec.components.interest.available %}N/A{% else %}{{ rec.interest_pct }}{% endif %}</div><div class="sc-lbl">Interest / 100</div></div>
+    <div class="score-cell"><div class="sc-val">{% if rec.components and not rec.components.skill.available %}N/A{% else %}{{ rec.skill_pct }}{% endif %}</div><div class="sc-lbl">Skill / 100</div></div>
+    <div class="score-cell"><div class="sc-val">{% if rec.components and not rec.components.background.available %}N/A{% else %}{{ rec.background_pct }}{% endif %}</div><div class="sc-lbl">Background / 100</div></div>
   </div>
 
   <div class="why-line">{{ rec.why }}</div>
+  {% if rec.explanation %}
+  <details><summary>Scoring evidence · {{ rec.algorithm_version }}</summary>
+    <p>{{ rec.riasec.note }}</p>
+    {% for key, component in rec.components.items %}<p>{{ key|title }}: {{ component.contribution_points|floatformat:1 }} points; effective weight {{ component.effective_weight|floatformat:3 }}.</p>{% endfor %}
+    {% for note in rec.explanation.uncertain_suggestions %}<p>{{ note }}</p>{% endfor %}
+    {% for note in rec.explanation.unavailable_evidence %}<p>Unavailable: {{ note }}</p>{% endfor %}
+    {% if rec.skill_alignment.potential_matches %}<p>Possible semantic matches, requiring confirmation:</p>{% for item in rec.skill_alignment.potential_matches %}<p>{{ item.name }} ↔ {{ item.semantic.reported_name }} (cosine {{ item.semantic.cosine_similarity }}, not a confidence probability).</p>{% endfor %}{% endif %}
+  </details>
+  {% endif %}
 
   {% if rec.missing_skills %}
     <div class="missing-head">
       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
-      {{ rec.missing_skills|length }} core skill{{ rec.missing_skills|length|pluralize }} to develop
+      {{ rec.missing_skills|length }} {% if rec.explanation %}related skill{{ rec.missing_skills|length|pluralize }} to confirm or explore{% else %}core skill{{ rec.missing_skills|length|pluralize }} to develop (legacy estimate){% endif %}
     </div>
     <div class="skill-tags">
       {% for skill in rec.missing_skills|slice:":10" %}
@@ -85,7 +96,7 @@
       {% endif %}
     </div>
   {% else %}
-    <div class="skill-tags"><span class="skill-tag ok">All core skills covered ✓</span></div>
+    <div class="skill-tags"><span class="skill-tag ok">{% if rec.explanation %}No unreported related skills listed{% else %}No gaps flagged by legacy matching{% endif %}</span></div>
   {% endif %}
 
   <div class="match-foot">

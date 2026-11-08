@@ -247,7 +247,7 @@ def _steps_from_llm(data: dict) -> list[RoadmapStep]:
     return steps
 
 
-def _fallback_steps(career: Career, missing_names: list[str]) -> list[RoadmapStep]:
+def _fallback_steps(career: Career, missing_names: list[str], *, exploration=False) -> list[RoadmapStep]:
     steps: list[RoadmapStep] = []
     idx = 0
 
@@ -270,7 +270,8 @@ def _fallback_steps(career: Career, missing_names: list[str]) -> list[RoadmapSte
             description=f"Study and practise {skill_name} through free online resources, tutorials, and hands-on exercises.",
             estimated_time="1–2 weeks", difficulty="Intermediate",
             deliverable=f"A small project or exercise demonstrating {skill_name}.",
-            why_it_matters=f"{skill_name} is a core requirement for {career.title} roles.",
+            why_it_matters=(f"{skill_name} is related to {career.title}; confirm your current experience and explore it if useful."
+                            if exploration else f"{skill_name} is a core requirement for {career.title} roles."),
             search_keywords=f"{skill_name} tutorial",
             is_skill_step=True,
         ))
@@ -323,8 +324,8 @@ def _steps_from_json(data: str) -> list[RoadmapStep]:
 def get_or_create_roadmap(user, career: Career) -> tuple[list[RoadmapStep], str, str]:
     """
     Return the user's saved roadmap for this career, generating and saving it
-    on first visit. Reloads never re-hit the LLM; the saved rows are deleted
-    when the user redoes the assessment, which triggers regeneration here.
+    on first explicit generation. Reloads never re-hit the LLM. Assessment and
+    recommendation changes preserve saved plans and progress.
     """
     from roadmap.models import SavedRoadmap
 
@@ -362,10 +363,29 @@ def generate_roadmap(user, career: Career) -> tuple[list[RoadmapStep], str, str]
     except UserResponse.DoesNotExist:
         return [], career.title, ""
 
-    skill_texts = _user_skill_texts(response)
-    _, missing_names = semantic_skill_match(skill_texts, career)
-
-    prompt = _build_prompt(user, career, missing_names)
+    if getattr(settings, 'RECOMMENDATION_ENGINE', 'legacy') == 'v2':
+        from recommender.engine.config import configuration
+        from recommender.engine.skills import alignment, reported_skills
+        reports = reported_skills(response, configuration())
+        analysis = alignment(reports, career)
+        missing_names = [row['name'] for row in analysis['opportunities']]
+        # New generation only; existing saved plans return before this branch.
+        # Do not feed legacy importance/core/proficiency assumptions to the LLM.
+        prompt = ('Create a learning exploration plan for ' + career.title + '.\n'
+                  'Self-reported skills: ' + ', '.join(r['name'] for r in reports['items']) + '.\n'
+                  'Education and experience context: ' + str(getattr(getattr(user, 'profile', None), 'field_of_study', 'Not reported')) + '; '
+                  + str(getattr(getattr(user, 'profile', None), 'experience_level', 'Not reported')) + '.\n'
+                  'Related skills not yet reported: ' + ', '.join(missing_names[:MAX_SKILL_STEPS]) + '.\n'
+                  'These are opportunities to confirm or explore, not verified deficiencies. '
+                  'Self-reported ratings are not verified proficiency; required proficiency and experience are unknown. '
+                  'Do not claim essential requirements or eligibility. '
+                  'Return JSON with roadmap_title, overview, steps. Each of 5 to 8 steps must include '
+                  'phase (Foundation, Skill Building, Practice, Portfolio or Career Prep), title, description, '
+                  'estimated_time, difficulty (Beginner, Intermediate or Advanced), deliverable, why_it_matters, search_keywords.')
+    else:
+        skill_texts = _user_skill_texts(response)
+        _, missing_names = semantic_skill_match(skill_texts, career)
+        prompt = _build_prompt(user, career, missing_names)
     data   = _call_groq(prompt)
 
     if data:
@@ -375,5 +395,5 @@ def generate_roadmap(user, career: Career) -> tuple[list[RoadmapStep], str, str]
         except (ValueError, TypeError):
             logger.warning("AI returned an invalid roadmap; using fallback")
 
-    steps = _fallback_steps(career, missing_names)
+    steps = _fallback_steps(career, missing_names, exploration=getattr(settings, 'RECOMMENDATION_ENGINE', 'legacy') == 'v2')
     return steps, f"Roadmap: {career.title}", ""

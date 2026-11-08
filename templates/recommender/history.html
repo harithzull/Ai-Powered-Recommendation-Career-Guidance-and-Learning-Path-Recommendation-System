@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}Recommendation history · CareerCoach{% endblock %}
+{% block page_title %}Recommendation history{% endblock %}
+{% block content %}
+<p>Saved ranking snapshots. These points are not probabilities of career success. Existing roadmaps remain separate.</p>
+{% for run in page %}
+<div class="card" style="padding:20px;margin-bottom:16px">
+  <h3>{{ run.created_at }} · {{ run.algorithm_version }}</h3>
+  <p>Input signature: <code>{{ run.input_signature }}</code></p>
+  {% for rec in run.results %}
+    <p>{{ forloop.counter }}. {{ rec.career.title }} · {{ rec.final_score }} ranking points<br>{{ rec.why }}</p>
+  {% empty %}<p>This snapshot has no readable recommendations.</p>{% endfor %}
+</div>
+{% empty %}<p>No recommendation snapshots yet.</p>{% endfor %}
+{% if page.has_previous %}<a href="?page={{ page.previous_page_number }}">Previous</a>{% endif %}
+{% if page.has_next %}<a href="?page={{ page.next_page_number }}">Next</a>{% endif %}
+<p><a href="{% url 'recommender:results' %}">Current recommendations</a></p>
+{% endblock %}

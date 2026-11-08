@@ -9,8 +9,8 @@ class SavedRoadmap(models.Model):
     Persisted LLM-generated roadmap for a user+career pair.
 
     Generated once on first visit and reused on every reload so the content
-    stays stable. Deleted when the user redoes the assessment, so the next
-    visit generates a fresh roadmap from the updated profile.
+    stays stable. Assessment and recommendation changes preserve the saved
+    plan and learning progress; regeneration is a separate explicit action.
     """
 
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="saved_roadmaps")

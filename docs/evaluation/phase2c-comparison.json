@@ -1,0 +1,1605 @@
+{
+  "synthetic_only": true,
+  "embedding_fixture": "orthonormal four-skill vectors; unknown terms zero",
+  "accuracy_claim": "None. Controlled behavior comparison, not real student outcomes.",
+  "profiles": {
+    "analytic": {
+      "legacy": [
+        {
+          "career": "Synthetic Software",
+          "score": 89.7,
+          "components": {
+            "interest_pct": 80.0,
+            "skill_pct": 100.0,
+            "background_pct": 91.0
+          }
+        },
+        {
+          "career": "Synthetic Data",
+          "score": 85.3,
+          "components": {
+            "interest_pct": 90.0,
+            "skill_pct": 77.8,
+            "background_pct": 91.0
+          }
+        },
+        {
+          "career": "Synthetic Design",
+          "score": 16.4,
+          "components": {
+            "interest_pct": 20.0,
+            "skill_pct": 0.0,
+            "background_pct": 49.0
+          }
+        }
+      ],
+      "v2": [
+        {
+          "career": "Synthetic Software",
+          "score": 88.8,
+          "components": {
+            "interest_pct": 75.0,
+            "skill_pct": 100.0,
+            "background_pct": 100
+          }
+        },
+        {
+          "career": "Synthetic Data",
+          "score": 81.0,
+          "components": {
+            "interest_pct": 87.5,
+            "skill_pct": 66.7,
+            "background_pct": 100
+          }
+        },
+        {
+          "career": "Synthetic Design",
+          "score": 6.0,
+          "components": {
+            "interest_pct": 0.0,
+            "skill_pct": 0.0,
+            "background_pct": 40.0
+          }
+        }
+      ],
+      "details": [
+        {
+          "career_id": 1,
+          "components": {
+            "interest": {
+              "score": 0.75,
+              "available": true,
+              "method": "industry_fallback",
+              "configured_weight": 0.45,
+              "effective_weight": 0.45,
+              "contribution_points": 33.75
+            },
+            "skill": {
+              "score": 1.0,
+              "available": true,
+              "method": "equal_weight_canonical_coverage",
+              "configured_weight": 0.4,
+              "effective_weight": 0.4,
+              "contribution_points": 40.0
+            },
+            "background": {
+              "score": 1,
+              "available": true,
+              "method": "education_industry_proxy",
+              "education_aligned": true,
+              "experience_context": "No experience",
+              "note": "Education is a broad industry proxy, not eligibility. Experience is descriptive only: no comparable career-specific experience requirements are available.",
+              "configured_weight": 0.15,
+              "effective_weight": 0.15,
+              "contribution_points": 15.0
+            }
+          },
+          "explanation": {
+            "summary": "Interest alignment uses industry_fallback across I, R. Reported canonical skills: Python, SQL. Education industry proxy: aligned.",
+            "supporting_evidence": [
+              "Interest alignment uses industry_fallback across I, R.",
+              "Reported canonical skills: Python, SQL.",
+              "Education industry proxy: aligned."
+            ],
+            "uncertain_suggestions": [
+              "Industry mapping is a broad proxy, not occupation-specific RIASEC evidence.",
+              "Unreported related skills are opportunities to explore, not proven deficiencies."
+            ],
+            "unavailable_evidence": [
+              "Verified comparable skill proficiency and career-specific experience requirements"
+            ],
+            "score_meaning": "Ranking points from available evidence; not a probability of career success."
+          },
+          "riasec": {
+            "student_scoring_version": "legacy-answers-mean-1-to-5",
+            "bank_version": null,
+            "score": 0.75,
+            "available": true,
+            "method": "industry_fallback",
+            "evidence_quality": "industry_proxy",
+            "dimensions": [
+              "I",
+              "R"
+            ],
+            "dimension_values": {
+              "I": 1.0,
+              "R": 0.5
+            },
+            "note": "Industry-level interest proxy; a documented reviewed occupation profile was unavailable or unusable."
+          },
+          "skill_alignment": {
+            "score": 1.0,
+            "available": true,
+            "method": "equal_weight_canonical_coverage",
+            "matched_skills": [
+              {
+                "skill_id": 1,
+                "name": "Python",
+                "category": "unspecified",
+                "relation_type": "unspecified",
+                "relation_evidence": {},
+                "proficiency_requirement": "unknown",
+                "method": "canonical",
+                "self_reported_rating": 5,
+                "proficiency_verified": false
+              },
+              {
+                "skill_id": 2,
+                "name": "SQL",
+                "category": "unspecified",
+                "relation_type": "unspecified",
+                "relation_evidence": {},
+                "proficiency_requirement": "unknown",
+                "method": "canonical",
+                "self_reported_rating": 2,
+                "proficiency_verified": false
+              }
+            ],
+            "potential_matches": [],
+            "opportunities": [],
+            "verified_proficiency_gaps": [],
+            "related_skill_count": 2,
+            "semantic_status": "disabled",
+            "reports_truncated": false,
+            "note": "Each canonical relation counts once, irrespective of aliases, repetitions or self-rating. No verified comparable proficiency scale is available."
+          }
+        },
+        {
+          "career_id": 2,
+          "components": {
+            "interest": {
+              "score": 0.875,
+              "available": true,
+              "method": "industry_fallback",
+              "configured_weight": 0.45,
+              "effective_weight": 0.45,
+              "contribution_points": 39.375
+            },
+            "skill": {
+              "score": 0.6666666666666666,
+              "available": true,
+              "method": "equal_weight_canonical_coverage",
+              "configured_weight": 0.4,
+              "effective_weight": 0.4,
+              "contribution_points": 26.666666666666664
+            },
+            "background": {
+              "score": 1,
+              "available": true,
+              "method": "education_industry_proxy",
+              "education_aligned": true,
+              "experience_context": "No experience",
+              "note": "Education is a broad industry proxy, not eligibility. Experience is descriptive only: no comparable career-specific experience requirements are available.",
+              "configured_weight": 0.15,
+              "effective_weight": 0.15,
+              "contribution_points": 15.0
+            }
+          },
+          "explanation": {
+            "summary": "Interest alignment uses industry_fallback across I, C. Reported canonical skills: Python, SQL. Education industry proxy: aligned.",
+            "supporting_evidence": [
+              "Interest alignment uses industry_fallback across I, C.",
+              "Reported canonical skills: Python, SQL.",
+              "Education industry proxy: aligned."
+            ],
+            "uncertain_suggestions": [
+              "Industry mapping is a broad proxy, not occupation-specific RIASEC evidence.",
+              "Unreported related skills are opportunities to explore, not proven deficiencies."
+            ],
+            "unavailable_evidence": [
+              "Verified comparable skill proficiency and career-specific experience requirements"
+            ],
+            "score_meaning": "Ranking points from available evidence; not a probability of career success."
+          },
+          "riasec": {
+            "student_scoring_version": "legacy-answers-mean-1-to-5",
+            "bank_version": null,
+            "score": 0.875,
+            "available": true,
+            "method": "industry_fallback",
+            "evidence_quality": "industry_proxy",
+            "dimensions": [
+              "I",
+              "C"
+            ],
+            "dimension_values": {
+              "I": 1.0,
+              "C": 0.75
+            },
+            "note": "Industry-level interest proxy; a documented reviewed occupation profile was unavailable or unusable."
+          },
+          "skill_alignment": {
+            "score": 0.6666666666666666,
+            "available": true,
+            "method": "equal_weight_canonical_coverage",
+            "matched_skills": [
+              {
+                "skill_id": 1,
+                "name": "Python",
+                "category": "unspecified",
+                "relation_type": "unspecified",
+                "relation_evidence": {},
+                "proficiency_requirement": "unknown",
+                "method": "canonical",
+                "self_reported_rating": 5,
+                "proficiency_verified": false
+              },
+              {
+                "skill_id": 2,
+                "name": "SQL",
+                "category": "unspecified",
+                "relation_type": "unspecified",
+                "relation_evidence": {},
+                "proficiency_requirement": "unknown",
+                "method": "canonical",
+                "self_reported_rating": 2,
+                "proficiency_verified": false
+              }
+            ],
+            "potential_matches": [],
+            "opportunities": [
+              {
+                "skill_id": 3,
+                "name": "Writing",
+                "category": "unspecified",
+                "relation_type": "unspecified",
+                "relation_evidence": {},
+                "proficiency_requirement": "unknown",
+                "classification": "not_reported",
+                "suggestion": "Confirm your experience with this skill or explore it; absence from your report is not a deficiency."
+              }
+            ],
+            "verified_proficiency_gaps": [],
+            "related_skill_count": 3,
+            "semantic_status": "disabled",
+            "reports_truncated": false,
+            "note": "Each canonical relation counts once, irrespective of aliases, repetitions or self-rating. No verified comparable proficiency scale is available."
+          }
+        },
+        {
+          "career_id": 3,
+          "components": {
+            "interest": {
+              "score": 0.0,
+              "available": true,
+              "method": "industry_fallback",
+              "configured_weight": 0.45,
+              "effective_weight": 0.45,
+              "contribution_points": 0.0
+            },
+            "skill": {
+              "score": 0.0,
+              "available": true,
+              "method": "equal_weight_canonical_coverage",
+              "configured_weight": 0.4,
+              "effective_weight": 0.4,
+              "contribution_points": 0.0
+            },
+            "background": {
+              "score": 0.4,
+              "available": true,
+              "method": "education_industry_proxy",
+              "education_aligned": false,
+              "experience_context": "No experience",
+              "note": "Education is a broad industry proxy, not eligibility. Experience is descriptive only: no comparable career-specific experience requirements are available.",
+              "configured_weight": 0.15,
+              "effective_weight": 0.15,
+              "contribution_points": 6.0
+            }
+          },
+          "explanation": {
+            "summary": "Interest alignment uses industry_fallback across A. Education industry proxy: different field.",
+            "supporting_evidence": [
+              "Interest alignment uses industry_fallback across A.",
+              "Education industry proxy: different field."
+            ],
+            "uncertain_suggestions": [
+              "Industry mapping is a broad proxy, not occupation-specific RIASEC evidence.",
+              "Unreported related skills are opportunities to explore, not proven deficiencies."
+            ],
+            "unavailable_evidence": [
+              "Verified comparable skill proficiency and career-specific experience requirements"
+            ],
+            "score_meaning": "Ranking points from available evidence; not a probability of career success."
+          },
+          "riasec": {
+            "student_scoring_version": "legacy-answers-mean-1-to-5",
+            "bank_version": null,
+            "score": 0.0,
+            "available": true,
+            "method": "industry_fallback",
+            "evidence_quality": "industry_proxy",
+            "dimensions": [
+              "A"
+            ],
+            "dimension_values": {
+              "A": 0.0
+            },
+            "note": "Industry-level interest proxy; a documented reviewed occupation profile was unavailable or unusable."
+          },
+          "skill_alignment": {
+            "score": 0.0,
+            "available": true,
+            "method": "equal_weight_canonical_coverage",
+            "matched_skills": [],
+            "potential_matches": [],
+            "opportunities": [
+              {
+                "skill_id": 4,
+                "name": "Design",
+                "category": "unspecified",
+                "relation_type": "unspecified",
+                "relation_evidence": {},
+                "proficiency_requirement": "unknown",
+                "classification": "not_reported",
+                "suggestion": "Confirm your experience with this skill or explore it; absence from your report is not a deficiency."
+              },
+              {
+                "skill_id": 3,
+                "name": "Writing",
+                "category": "unspecified",
+                "relation_type": "unspecified",
+                "relation_evidence": {},
+                "proficiency_requirement": "unknown",
+                "classification": "not_reported",
+                "suggestion": "Confirm your experience with this skill or explore it; absence from your report is not a deficiency."
+              }
+            ],
+            "verified_proficiency_gaps": [],
+            "related_skill_count": 2,
+            "semantic_status": "disabled",
+            "reports_truncated": false,
+            "note": "Each canonical relation counts once, irrespective of aliases, repetitions or self-rating. No verified comparable proficiency scale is available."
+          }
+        }
+      ],
+      "rank_changes": {
+        "Synthetic Software": 0,
+        "Synthetic Data": 0,
+        "Synthetic Design": 0
+      },
+      "evidence_coverage": {
+        "interest": 3,
+        "skill": 3,
+        "background": 3
+      },
+      "explanation_completeness": {
+        "recommendations": 3,
+        "structured_explanations": 3
+      },
+      "potential_anomalies": [],
+      "missing_data": {
+        "Synthetic Software": [
+          "Verified comparable skill proficiency and career-specific experience requirements"
+        ],
+        "Synthetic Data": [
+          "Verified comparable skill proficiency and career-specific experience requirements"
+        ],
+        "Synthetic Design": [
+          "Verified comparable skill proficiency and career-specific experience requirements"
+        ]
+      }
+    },
+    "creative": {
+      "legacy": [
+        {
+          "career": "Synthetic Design",
+          "score": 70.1,
+          "components": {
+            "interest_pct": 100.0,
+            "skill_pct": 28.6,
+            "background_pct": 91.0
+          }
+        },
+        {
+          "career": "Synthetic Data",
+          "score": 34.2,
+          "components": {
+            "interest_pct": 40.0,
+            "skill_pct": 22.2,
+            "background_pct": 49.0
+          }
+        },
+        {
+          "career": "Synthetic Software",
+          "score": 20.9,
+          "components": {
+            "interest_pct": 30.0,
+            "skill_pct": 0.0,
+            "background_pct": 49.0
+          }
+        }
+      ],
+      "v2": [
+        {
+          "career": "Synthetic Design",
+          "score": 80.0,
+          "components": {
+            "interest_pct": 100.0,
+            "skill_pct": 50.0,
+            "background_pct": 100
+          }
+        },
+        {
+          "career": "Synthetic Data",
+          "score": 30.6,
+          "components": {
+            "interest_pct": 25.0,
+            "skill_pct": 33.3,
+            "background_pct": 40.0
+          }
+        },
+        {
+          "career": "Synthetic Software",
+          "score": 11.6,
+          "components": {
+            "interest_pct": 12.5,
+            "skill_pct": 0.0,
+            "background_pct": 40.0
+          }
+        }
+      ],
+      "details": [
+        {
+          "career_id": 3,
+          "components": {
+            "interest": {
+              "score": 1.0,
+              "available": true,
+              "method": "industry_fallback",
+              "configured_weight": 0.45,
+              "effective_weight": 0.45,
+              "contribution_points": 45.0
+            },
+            "skill": {
+              "score": 0.5,
+              "available": true,
+              "method": "equal_weight_canonical_coverage",
+              "configured_weight": 0.4,
+              "effective_weight": 0.4,
+              "contribution_points": 20.0
+            },
+            "background": {
+              "score": 1,
+              "available": true,
+              "method": "education_industry_proxy",
+              "education_aligned": true,
+              "experience_context": "No experience",
+              "note": "Education is a broad industry proxy, not eligibility. Experience is descriptive only: no comparable career-specific experience requirements are available.",
+              "configured_weight": 0.15,
+              "effective_weight": 0.15,
+              "contribution_points": 15.0
+            }
+          },
+          "explanation": {
+            "summary": "Interest alignment uses industry_fallback across A. Reported canonical skills: Writing. Education industry proxy: aligned.",
+            "supporting_evidence": [
+              "Interest alignment uses industry_fallback across A.",
+              "Reported canonical skills: Writing.",
+              "Education industry proxy: aligned."
+            ],
+            "uncertain_suggestions": [
+              "Industry mapping is a broad proxy, not occupation-specific RIASEC evidence.",
+              "Unreported related skills are opportunities to explore, not proven deficiencies."
+            ],
+            "unavailable_evidence": [
+              "Verified comparable skill proficiency and career-specific experience requirements"
+            ],
+            "score_meaning": "Ranking points from available evidence; not a probability of career success."
+          },
+          "riasec": {
+            "student_scoring_version": "legacy-answers-mean-1-to-5",
+            "bank_version": null,
+            "score": 1.0,
+            "available": true,
+            "method": "industry_fallback",
+            "evidence_quality": "industry_proxy",
+            "dimensions": [
+              "A"
+            ],
+            "dimension_values": {
+              "A": 1.0
+            },
+            "note": "Industry-level interest proxy; a documented reviewed occupation profile was unavailable or unusable."
+          },
+          "skill_alignment": {
+            "score": 0.5,
+            "available": true,
+            "method": "equal_weight_canonical_coverage",
+            "matched_skills": [
+              {
+                "skill_id": 3,
+                "name": "Writing",
+                "category": "unspecified",
+                "relation_type": "unspecified",
+                "relation_evidence": {},
+                "proficiency_requirement": "unknown",
+                "method": "canonical",
+                "self_reported_rating": 4,
+                "proficiency_verified": false
+              }
+            ],
+            "potential_matches": [],
+            "opportunities": [
+              {
+                "skill_id": 4,
+                "name": "Design",
+                "category": "unspecified",
+                "relation_type": "unspecified",
+                "relation_evidence": {},
+                "proficiency_requirement": "unknown",
+                "classification": "not_reported",
+                "suggestion": "Confirm your experience with this skill or explore it; absence from your report is not a deficiency."
+              }
+            ],
+            "verified_proficiency_gaps": [],
+            "related_skill_count": 2,
+            "semantic_status": "disabled",
+            "reports_truncated": false,
+            "note": "Each canonical relation counts once, irrespective of aliases, repetitions or self-rating. No verified comparable proficiency scale is available."
+          }
+        },
+        {
+          "career_id": 2,
+          "components": {
+            "interest": {
+              "score": 0.25,
+              "available": true,
+              "method": "industry_fallback",
+              "configured_weight": 0.45,
+              "effective_weight": 0.45,
+              "contribution_points": 11.25
+            },
+            "skill": {
+              "score": 0.3333333333333333,
+              "available": true,
+              "method": "equal_weight_canonical_coverage",
+              "configured_weight": 0.4,
+              "effective_weight": 0.4,
+              "contribution_points": 13.333333333333332
+            },
+            "background": {
+              "score": 0.4,
+              "available": true,
+              "method": "education_industry_proxy",
+              "education_aligned": false,
+              "experience_context": "No experience",
+              "note": "Education is a broad industry proxy, not eligibility. Experience is descriptive only: no comparable career-specific experience requirements are available.",
+              "configured_weight": 0.15,
+              "effective_weight": 0.15,
+              "contribution_points": 6.0
+            }
+          },
+          "explanation": {
+            "summary": "Interest alignment uses industry_fallback across I, C. Reported canonical skills: Writing. Education industry proxy: different field.",
+            "supporting_evidence": [
+              "Interest alignment uses industry_fallback across I, C.",
+              "Reported canonical skills: Writing.",
+              "Education industry proxy: different field."
+            ],
+            "uncertain_suggestions": [
+              "Industry mapping is a broad proxy, not occupation-specific RIASEC evidence.",
+              "Unreported related skills are opportunities to explore, not proven deficiencies."
+            ],
+            "unavailable_evidence": [
+              "Verified comparable skill proficiency and career-specific experience requirements"
+            ],
+            "score_meaning": "Ranking points from available evidence; not a probability of career success."
+          },
+          "riasec": {
+            "student_scoring_version": "legacy-answers-mean-1-to-5",
+            "bank_version": null,
+            "score": 0.25,
+            "available": true,
+            "method": "industry_fallback",
+            "evidence_quality": "industry_proxy",
+            "dimensions": [
+              "I",
+              "C"
+            ],
+            "dimension_values": {
+              "I": 0.25,
+              "C": 0.25
+            },
+            "note": "Industry-level interest proxy; a documented reviewed occupation profile was unavailable or unusable."
+          },
+          "skill_alignment": {
+            "score": 0.3333333333333333,
+            "available": true,
+            "method": "equal_weight_canonical_coverage",
+            "matched_skills": [
+              {
+                "skill_id": 3,
+                "name": "Writing",
+                "category": "unspecified",
+                "relation_type": "unspecified",
+                "relation_evidence": {},
+                "proficiency_requirement": "unknown",
+                "method": "canonical",
+                "self_reported_rating": 4,
+                "proficiency_verified": false
+              }
+            ],
+            "potential_matches": [],
+            "opportunities": [
+              {
+                "skill_id": 1,
+                "name": "Python",
+                "category": "unspecified",
+                "relation_type": "unspecified",
+                "relation_evidence": {},
+                "proficiency_requirement": "unknown",
+                "classification": "not_reported",
+                "suggestion": "Confirm your experience with this skill or explore it; absence from your report is not a deficiency."
+              },
+              {
+                "skill_id": 2,
+                "name": "SQL",
+                "category": "unspecified",
+                "relation_type": "unspecified",
+                "relation_evidence": {},
+                "proficiency_requirement": "unknown",
+                "classification": "not_reported",
+                "suggestion": "Confirm your experience with this skill or explore it; absence from your report is not a deficiency."
+              }
+            ],
+            "verified_proficiency_gaps": [],
+            "related_skill_count": 3,
+            "semantic_status": "disabled",
+            "reports_truncated": false,
+            "note": "Each canonical relation counts once, irrespective of aliases, repetitions or self-rating. No verified comparable proficiency scale is available."
+          }
+        },
+        {
+          "career_id": 1,
+          "components": {
+            "interest": {
+              "score": 0.125,
+              "available": true,
+              "method": "industry_fallback",
+              "configured_weight": 0.45,
+              "effective_weight": 0.45,
+              "contribution_points": 5.625
+            },
+            "skill": {
+              "score": 0.0,
+              "available": true,
+              "method": "equal_weight_canonical_coverage",
+              "configured_weight": 0.4,
+              "effective_weight": 0.4,
+              "contribution_points": 0.0
+            },
+            "background": {
+              "score": 0.4,
+              "available": true,
+              "method": "education_industry_proxy",
+              "education_aligned": false,
+              "experience_context": "No experience",
+              "note": "Education is a broad industry proxy, not eligibility. Experience is descriptive only: no comparable career-specific experience requirements are available.",
+              "configured_weight": 0.15,
+              "effective_weight": 0.15,
+              "contribution_points": 6.0
+            }
+          },
+          "explanation": {
+            "summary": "Interest alignment uses industry_fallback across I, R. Education industry proxy: different field.",
+            "supporting_evidence": [
+              "Interest alignment uses industry_fallback across I, R.",
+              "Education industry proxy: different field."
+            ],
+            "uncertain_suggestions": [
+              "Industry mapping is a broad proxy, not occupation-specific RIASEC evidence.",
+              "Unreported related skills are opportunities to explore, not proven deficiencies."
+            ],
+            "unavailable_evidence": [
+              "Verified comparable skill proficiency and career-specific experience requirements"
+            ],
+            "score_meaning": "Ranking points from available evidence; not a probability of career success."
+          },
+          "riasec": {
+            "student_scoring_version": "legacy-answers-mean-1-to-5",
+            "bank_version": null,
+            "score": 0.125,
+            "available": true,
+            "method": "industry_fallback",
+            "evidence_quality": "industry_proxy",
+            "dimensions": [
+              "I",
+              "R"
+            ],
+            "dimension_values": {
+              "I": 0.25,
+              "R": 0.0
+            },
+            "note": "Industry-level interest proxy; a documented reviewed occupation profile was unavailable or unusable."
+          },
+          "skill_alignment": {
+            "score": 0.0,
+            "available": true,
+            "method": "equal_weight_canonical_coverage",
+            "matched_skills": [],
+            "potential_matches": [],
+            "opportunities": [
+              {
+                "skill_id": 1,
+                "name": "Python",
+                "category": "unspecified",
+                "relation_type": "unspecified",
+                "relation_evidence": {},
+                "proficiency_requirement": "unknown",
+                "classification": "not_reported",
+                "suggestion": "Confirm your experience with this skill or explore it; absence from your report is not a deficiency."
+              },
+              {
+                "skill_id": 2,
+                "name": "SQL",
+                "category": "unspecified",
+                "relation_type": "unspecified",
+                "relation_evidence": {},
+                "proficiency_requirement": "unknown",
+                "classification": "not_reported",
+                "suggestion": "Confirm your experience with this skill or explore it; absence from your report is not a deficiency."
+              }
+            ],
+            "verified_proficiency_gaps": [],
+            "related_skill_count": 2,
+            "semantic_status": "disabled",
+            "reports_truncated": false,
+            "note": "Each canonical relation counts once, irrespective of aliases, repetitions or self-rating. No verified comparable proficiency scale is available."
+          }
+        }
+      ],
+      "rank_changes": {
+        "Synthetic Design": 0,
+        "Synthetic Data": 0,
+        "Synthetic Software": 0
+      },
+      "evidence_coverage": {
+        "interest": 3,
+        "skill": 3,
+        "background": 3
+      },
+      "explanation_completeness": {
+        "recommendations": 3,
+        "structured_explanations": 3
+      },
+      "potential_anomalies": [],
+      "missing_data": {
+        "Synthetic Design": [
+          "Verified comparable skill proficiency and career-specific experience requirements"
+        ],
+        "Synthetic Data": [
+          "Verified comparable skill proficiency and career-specific experience requirements"
+        ],
+        "Synthetic Software": [
+          "Verified comparable skill proficiency and career-specific experience requirements"
+        ]
+      }
+    },
+    "flat_missing": {
+      "legacy": [
+        {
+          "career": "Synthetic Data",
+          "score": 34.4,
+          "components": {
+            "interest_pct": 60.0,
+            "skill_pct": 0.0,
+            "background_pct": 49.0
+          }
+        },
+        {
+          "career": "Synthetic Design",
+          "score": 34.4,
+          "components": {
+            "interest_pct": 60.0,
+            "skill_pct": 0.0,
+            "background_pct": 49.0
+          }
+        },
+        {
+          "career": "Synthetic Software",
+          "score": 34.4,
+          "components": {
+            "interest_pct": 60.0,
+            "skill_pct": 0.0,
+            "background_pct": 49.0
+          }
+        }
+      ],
+      "v2": [
+        {
+          "career": "Synthetic Data",
+          "score": 50.0,
+          "components": {
+            "interest_pct": 50.0,
+            "skill_pct": 50.0,
+            "background_pct": 50.0
+          }
+        },
+        {
+          "career": "Synthetic Design",
+          "score": 50.0,
+          "components": {
+            "interest_pct": 50.0,
+            "skill_pct": 50.0,
+            "background_pct": 50.0
+          }
+        },
+        {
+          "career": "Synthetic Software",
+          "score": 50.0,
+          "components": {
+            "interest_pct": 50.0,
+            "skill_pct": 50.0,
+            "background_pct": 50.0
+          }
+        }
+      ],
+      "details": [
+        {
+          "career_id": 2,
+          "components": {
+            "interest": {
+              "score": 0.5,
+              "available": true,
+              "method": "industry_fallback",
+              "configured_weight": 0.45,
+              "effective_weight": 1.0,
+              "contribution_points": 50.0
+            },
+            "skill": {
+              "score": null,
+              "available": false,
+              "method": "equal_weight_canonical_coverage",
+              "configured_weight": 0.4,
+              "effective_weight": 0,
+              "contribution_points": 0
+            },
+            "background": {
+              "score": null,
+              "available": false,
+              "method": "education_industry_proxy",
+              "education_aligned": null,
+              "experience_context": "Not reported",
+              "note": "Education is a broad industry proxy, not eligibility. Experience is descriptive only: no comparable career-specific experience requirements are available.",
+              "configured_weight": 0.15,
+              "effective_weight": 0,
+              "contribution_points": 0
+            }
+          },
+          "explanation": {
+            "summary": "Interest alignment uses industry_fallback across I, C.",
+            "supporting_evidence": [
+              "Interest alignment uses industry_fallback across I, C."
+            ],
+            "uncertain_suggestions": [
+              "Industry mapping is a broad proxy, not occupation-specific RIASEC evidence.",
+              "Unreported related skills are opportunities to explore, not proven deficiencies."
+            ],
+            "unavailable_evidence": [
+              "Skill coverage evidence (no reports or no catalog relations)",
+              "Comparable education industry context",
+              "Verified comparable skill proficiency and career-specific experience requirements"
+            ],
+            "score_meaning": "Ranking points from available evidence; not a probability of career success."
+          },
+          "riasec": {
+            "student_scoring_version": "legacy-answers-mean-1-to-5",
+            "bank_version": null,
+            "score": 0.5,
+            "available": true,
+            "method": "industry_fallback",
+            "evidence_quality": "industry_proxy",
+            "dimensions": [
+              "I",
+              "C"
+            ],
+            "dimension_values": {
+              "I": 0.5,
+              "C": 0.5
+            },
+            "note": "Flat student interests provide no directional preference; neutral alignment."
+          },
+          "skill_alignment": {
+            "score": null,
+            "available": false,
+            "method": "equal_weight_canonical_coverage",
+            "matched_skills": [],
+            "potential_matches": [],
+            "opportunities": [
+              {
+                "skill_id": 1,
+                "name": "Python",
+                "category": "unspecified",
+                "relation_type": "unspecified",
+                "relation_evidence": {},
+                "proficiency_requirement": "unknown",
+                "classification": "not_reported",
+                "suggestion": "Confirm your experience with this skill or explore it; absence from your report is not a deficiency."
+              },
+              {
+                "skill_id": 2,
+                "name": "SQL",
+                "category": "unspecified",
+                "relation_type": "unspecified",
+                "relation_evidence": {},
+                "proficiency_requirement": "unknown",
+                "classification": "not_reported",
+                "suggestion": "Confirm your experience with this skill or explore it; absence from your report is not a deficiency."
+              },
+              {
+                "skill_id": 3,
+                "name": "Writing",
+                "category": "unspecified",
+                "relation_type": "unspecified",
+                "relation_evidence": {},
+                "proficiency_requirement": "unknown",
+                "classification": "not_reported",
+                "suggestion": "Confirm your experience with this skill or explore it; absence from your report is not a deficiency."
+              }
+            ],
+            "verified_proficiency_gaps": [],
+            "related_skill_count": 3,
+            "semantic_status": "disabled",
+            "reports_truncated": false,
+            "note": "Each canonical relation counts once, irrespective of aliases, repetitions or self-rating. No verified comparable proficiency scale is available."
+          }
+        },
+        {
+          "career_id": 3,
+          "components": {
+            "interest": {
+              "score": 0.5,
+              "available": true,
+              "method": "industry_fallback",
+              "configured_weight": 0.45,
+              "effective_weight": 1.0,
+              "contribution_points": 50.0
+            },
+            "skill": {
+              "score": null,
+              "available": false,
+              "method": "equal_weight_canonical_coverage",
+              "configured_weight": 0.4,
+              "effective_weight": 0,
+              "contribution_points": 0
+            },
+            "background": {
+              "score": null,
+              "available": false,
+              "method": "education_industry_proxy",
+              "education_aligned": null,
+              "experience_context": "Not reported",
+              "note": "Education is a broad industry proxy, not eligibility. Experience is descriptive only: no comparable career-specific experience requirements are available.",
+              "configured_weight": 0.15,
+              "effective_weight": 0,
+              "contribution_points": 0
+            }
+          },
+          "explanation": {
+            "summary": "Interest alignment uses industry_fallback across A.",
+            "supporting_evidence": [
+              "Interest alignment uses industry_fallback across A."
+            ],
+            "uncertain_suggestions": [
+              "Industry mapping is a broad proxy, not occupation-specific RIASEC evidence.",
+              "Unreported related skills are opportunities to explore, not proven deficiencies."
+            ],
+            "unavailable_evidence": [
+              "Skill coverage evidence (no reports or no catalog relations)",
+              "Comparable education industry context",
+              "Verified comparable skill proficiency and career-specific experience requirements"
+            ],
+            "score_meaning": "Ranking points from available evidence; not a probability of career success."
+          },
+          "riasec": {
+            "student_scoring_version": "legacy-answers-mean-1-to-5",
+            "bank_version": null,
+            "score": 0.5,
+            "available": true,
+            "method": "industry_fallback",
+            "evidence_quality": "industry_proxy",
+            "dimensions": [
+              "A"
+            ],
+            "dimension_values": {
+              "A": 0.5
+            },
+            "note": "Flat student interests provide no directional preference; neutral alignment."
+          },
+          "skill_alignment": {
+            "score": null,
+            "available": false,
+            "method": "equal_weight_canonical_coverage",
+            "matched_skills": [],
+            "potential_matches": [],
+            "opportunities": [
+              {
+                "skill_id": 4,
+                "name": "Design",
+                "category": "unspecified",
+                "relation_type": "unspecified",
+                "relation_evidence": {},
+                "proficiency_requirement": "unknown",
+                "classification": "not_reported",
+                "suggestion": "Confirm your experience with this skill or explore it; absence from your report is not a deficiency."
+              },
+              {
+                "skill_id": 3,
+                "name": "Writing",
+                "category": "unspecified",
+                "relation_type": "unspecified",
+                "relation_evidence": {},
+                "proficiency_requirement": "unknown",
+                "classification": "not_reported",
+                "suggestion": "Confirm your experience with this skill or explore it; absence from your report is not a deficiency."
+              }
+            ],
+            "verified_proficiency_gaps": [],
+            "related_skill_count": 2,
+            "semantic_status": "disabled",
+            "reports_truncated": false,
+            "note": "Each canonical relation counts once, irrespective of aliases, repetitions or self-rating. No verified comparable proficiency scale is available."
+          }
+        },
+        {
+          "career_id": 1,
+          "components": {
+            "interest": {
+              "score": 0.5,
+              "available": true,
+              "method": "industry_fallback",
+              "configured_weight": 0.45,
+              "effective_weight": 1.0,
+              "contribution_points": 50.0
+            },
+            "skill": {
+              "score": null,
+              "available": false,
+              "method": "equal_weight_canonical_coverage",
+              "configured_weight": 0.4,
+              "effective_weight": 0,
+              "contribution_points": 0
+            },
+            "background": {
+              "score": null,
+              "available": false,
+              "method": "education_industry_proxy",
+              "education_aligned": null,
+              "experience_context": "Not reported",
+              "note": "Education is a broad industry proxy, not eligibility. Experience is descriptive only: no comparable career-specific experience requirements are available.",
+              "configured_weight": 0.15,
+              "effective_weight": 0,
+              "contribution_points": 0
+            }
+          },
+          "explanation": {
+            "summary": "Interest alignment uses industry_fallback across I, R.",
+            "supporting_evidence": [
+              "Interest alignment uses industry_fallback across I, R."
+            ],
+            "uncertain_suggestions": [
+              "Industry mapping is a broad proxy, not occupation-specific RIASEC evidence.",
+              "Unreported related skills are opportunities to explore, not proven deficiencies."
+            ],
+            "unavailable_evidence": [
+              "Skill coverage evidence (no reports or no catalog relations)",
+              "Comparable education industry context",
+              "Verified comparable skill proficiency and career-specific experience requirements"
+            ],
+            "score_meaning": "Ranking points from available evidence; not a probability of career success."
+          },
+          "riasec": {
+            "student_scoring_version": "legacy-answers-mean-1-to-5",
+            "bank_version": null,
+            "score": 0.5,
+            "available": true,
+            "method": "industry_fallback",
+            "evidence_quality": "industry_proxy",
+            "dimensions": [
+              "I",
+              "R"
+            ],
+            "dimension_values": {
+              "I": 0.5,
+              "R": 0.5
+            },
+            "note": "Flat student interests provide no directional preference; neutral alignment."
+          },
+          "skill_alignment": {
+            "score": null,
+            "available": false,
+            "method": "equal_weight_canonical_coverage",
+            "matched_skills": [],
+            "potential_matches": [],
+            "opportunities": [
+              {
+                "skill_id": 1,
+                "name": "Python",
+                "category": "unspecified",
+                "relation_type": "unspecified",
+                "relation_evidence": {},
+                "proficiency_requirement": "unknown",
+                "classification": "not_reported",
+                "suggestion": "Confirm your experience with this skill or explore it; absence from your report is not a deficiency."
+              },
+              {
+                "skill_id": 2,
+                "name": "SQL",
+                "category": "unspecified",
+                "relation_type": "unspecified",
+                "relation_evidence": {},
+                "proficiency_requirement": "unknown",
+                "classification": "not_reported",
+                "suggestion": "Confirm your experience with this skill or explore it; absence from your report is not a deficiency."
+              }
+            ],
+            "verified_proficiency_gaps": [],
+            "related_skill_count": 2,
+            "semantic_status": "disabled",
+            "reports_truncated": false,
+            "note": "Each canonical relation counts once, irrespective of aliases, repetitions or self-rating. No verified comparable proficiency scale is available."
+          }
+        }
+      ],
+      "rank_changes": {
+        "Synthetic Data": 0,
+        "Synthetic Design": 0,
+        "Synthetic Software": 0
+      },
+      "evidence_coverage": {
+        "interest": 3,
+        "skill": 0,
+        "background": 0
+      },
+      "explanation_completeness": {
+        "recommendations": 3,
+        "structured_explanations": 3
+      },
+      "potential_anomalies": [],
+      "missing_data": {
+        "Synthetic Data": [
+          "Skill coverage evidence (no reports or no catalog relations)",
+          "Comparable education industry context",
+          "Verified comparable skill proficiency and career-specific experience requirements"
+        ],
+        "Synthetic Design": [
+          "Skill coverage evidence (no reports or no catalog relations)",
+          "Comparable education industry context",
+          "Verified comparable skill proficiency and career-specific experience requirements"
+        ],
+        "Synthetic Software": [
+          "Skill coverage evidence (no reports or no catalog relations)",
+          "Comparable education industry context",
+          "Verified comparable skill proficiency and career-specific experience requirements"
+        ]
+      }
+    },
+    "alias_duplicate": {
+      "legacy": [
+        {
+          "career": "Synthetic Software",
+          "score": 78.2,
+          "components": {
+            "interest_pct": 80.0,
+            "skill_pct": 71.4,
+            "background_pct": 91.0
+          }
+        },
+        {
+          "career": "Synthetic Data",
+          "score": 63.0,
+          "components": {
+            "interest_pct": 90.0,
+            "skill_pct": 22.2,
+            "background_pct": 91.0
+          }
+        },
+        {
+          "career": "Synthetic Design",
+          "score": 16.4,
+          "components": {
+            "interest_pct": 20.0,
+            "skill_pct": 0.0,
+            "background_pct": 49.0
+          }
+        }
+      ],
+      "v2": [
+        {
+          "career": "Synthetic Software",
+          "score": 68.8,
+          "components": {
+            "interest_pct": 75.0,
+            "skill_pct": 50.0,
+            "background_pct": 100
+          }
+        },
+        {
+          "career": "Synthetic Data",
+          "score": 67.7,
+          "components": {
+            "interest_pct": 87.5,
+            "skill_pct": 33.3,
+            "background_pct": 100
+          }
+        },
+        {
+          "career": "Synthetic Design",
+          "score": 6.0,
+          "components": {
+            "interest_pct": 0.0,
+            "skill_pct": 0.0,
+            "background_pct": 40.0
+          }
+        }
+      ],
+      "details": [
+        {
+          "career_id": 1,
+          "components": {
+            "interest": {
+              "score": 0.75,
+              "available": true,
+              "method": "industry_fallback",
+              "configured_weight": 0.45,
+              "effective_weight": 0.45,
+              "contribution_points": 33.75
+            },
+            "skill": {
+              "score": 0.5,
+              "available": true,
+              "method": "equal_weight_canonical_coverage",
+              "configured_weight": 0.4,
+              "effective_weight": 0.4,
+              "contribution_points": 20.0
+            },
+            "background": {
+              "score": 1,
+              "available": true,
+              "method": "education_industry_proxy",
+              "education_aligned": true,
+              "experience_context": "No experience",
+              "note": "Education is a broad industry proxy, not eligibility. Experience is descriptive only: no comparable career-specific experience requirements are available.",
+              "configured_weight": 0.15,
+              "effective_weight": 0.15,
+              "contribution_points": 15.0
+            }
+          },
+          "explanation": {
+            "summary": "Interest alignment uses industry_fallback across I, R. Reported canonical skills: Python. Education industry proxy: aligned.",
+            "supporting_evidence": [
+              "Interest alignment uses industry_fallback across I, R.",
+              "Reported canonical skills: Python.",
+              "Education industry proxy: aligned."
+            ],
+            "uncertain_suggestions": [
+              "Industry mapping is a broad proxy, not occupation-specific RIASEC evidence.",
+              "Unreported related skills are opportunities to explore, not proven deficiencies."
+            ],
+            "unavailable_evidence": [
+              "Verified comparable skill proficiency and career-specific experience requirements"
+            ],
+            "score_meaning": "Ranking points from available evidence; not a probability of career success."
+          },
+          "riasec": {
+            "student_scoring_version": "legacy-answers-mean-1-to-5",
+            "bank_version": null,
+            "score": 0.75,
+            "available": true,
+            "method": "industry_fallback",
+            "evidence_quality": "industry_proxy",
+            "dimensions": [
+              "I",
+              "R"
+            ],
+            "dimension_values": {
+              "I": 1.0,
+              "R": 0.5
+            },
+            "note": "Industry-level interest proxy; a documented reviewed occupation profile was unavailable or unusable."
+          },
+          "skill_alignment": {
+            "score": 0.5,
+            "available": true,
+            "method": "equal_weight_canonical_coverage",
+            "matched_skills": [
+              {
+                "skill_id": 1,
+                "name": "Python",
+                "category": "unspecified",
+                "relation_type": "unspecified",
+                "relation_evidence": {},
+                "proficiency_requirement": "unknown",
+                "method": "canonical",
+                "self_reported_rating": 5,
+                "proficiency_verified": false
+              }
+            ],
+            "potential_matches": [],
+            "opportunities": [
+              {
+                "skill_id": 2,
+                "name": "SQL",
+                "category": "unspecified",
+                "relation_type": "unspecified",
+                "relation_evidence": {},
+                "proficiency_requirement": "unknown",
+                "classification": "not_reported",
+                "suggestion": "Confirm your experience with this skill or explore it; absence from your report is not a deficiency."
+              }
+            ],
+            "verified_proficiency_gaps": [],
+            "related_skill_count": 2,
+            "semantic_status": "disabled",
+            "reports_truncated": false,
+            "note": "Each canonical relation counts once, irrespective of aliases, repetitions or self-rating. No verified comparable proficiency scale is available."
+          }
+        },
+        {
+          "career_id": 2,
+          "components": {
+            "interest": {
+              "score": 0.875,
+              "available": true,
+              "method": "industry_fallback",
+              "configured_weight": 0.45,
+              "effective_weight": 0.45,
+              "contribution_points": 39.375
+            },
+            "skill": {
+              "score": 0.3333333333333333,
+              "available": true,
+              "method": "equal_weight_canonical_coverage",
+              "configured_weight": 0.4,
+              "effective_weight": 0.4,
+              "contribution_points": 13.333333333333332
+            },
+            "background": {
+              "score": 1,
+              "available": true,
+              "method": "education_industry_proxy",
+              "education_aligned": true,
+              "experience_context": "No experience",
+              "note": "Education is a broad industry proxy, not eligibility. Experience is descriptive only: no comparable career-specific experience requirements are available.",
+              "configured_weight": 0.15,
+              "effective_weight": 0.15,
+              "contribution_points": 15.0
+            }
+          },
+          "explanation": {
+            "summary": "Interest alignment uses industry_fallback across I, C. Reported canonical skills: Python. Education industry proxy: aligned.",
+            "supporting_evidence": [
+              "Interest alignment uses industry_fallback across I, C.",
+              "Reported canonical skills: Python.",
+              "Education industry proxy: aligned."
+            ],
+            "uncertain_suggestions": [
+              "Industry mapping is a broad proxy, not occupation-specific RIASEC evidence.",
+              "Unreported related skills are opportunities to explore, not proven deficiencies."
+            ],
+            "unavailable_evidence": [
+              "Verified comparable skill proficiency and career-specific experience requirements"
+            ],
+            "score_meaning": "Ranking points from available evidence; not a probability of career success."
+          },
+          "riasec": {
+            "student_scoring_version": "legacy-answers-mean-1-to-5",
+            "bank_version": null,
+            "score": 0.875,
+            "available": true,
+            "method": "industry_fallback",
+            "evidence_quality": "industry_proxy",
+            "dimensions": [
+              "I",
+              "C"
+            ],
+            "dimension_values": {
+              "I": 1.0,
+              "C": 0.75
+            },
+            "note": "Industry-level interest proxy; a documented reviewed occupation profile was unavailable or unusable."
+          },
+          "skill_alignment": {
+            "score": 0.3333333333333333,
+            "available": true,
+            "method": "equal_weight_canonical_coverage",
+            "matched_skills": [
+              {
+                "skill_id": 1,
+                "name": "Python",
+                "category": "unspecified",
+                "relation_type": "unspecified",
+                "relation_evidence": {},
+                "proficiency_requirement": "unknown",
+                "method": "canonical",
+                "self_reported_rating": 5,
+                "proficiency_verified": false
+              }
+            ],
+            "potential_matches": [],
+            "opportunities": [
+              {
+                "skill_id": 2,
+                "name": "SQL",
+                "category": "unspecified",
+                "relation_type": "unspecified",
+                "relation_evidence": {},
+                "proficiency_requirement": "unknown",
+                "classification": "not_reported",
+                "suggestion": "Confirm your experience with this skill or explore it; absence from your report is not a deficiency."
+              },
+              {
+                "skill_id": 3,
+                "name": "Writing",
+                "category": "unspecified",
+                "relation_type": "unspecified",
+                "relation_evidence": {},
+                "proficiency_requirement": "unknown",
+                "classification": "not_reported",
+                "suggestion": "Confirm your experience with this skill or explore it; absence from your report is not a deficiency."
+              }
+            ],
+            "verified_proficiency_gaps": [],
+            "related_skill_count": 3,
+            "semantic_status": "disabled",
+            "reports_truncated": false,
+            "note": "Each canonical relation counts once, irrespective of aliases, repetitions or self-rating. No verified comparable proficiency scale is available."
+          }
+        },
+        {
+          "career_id": 3,
+          "components": {
+            "interest": {
+              "score": 0.0,
+              "available": true,
+              "method": "industry_fallback",
+              "configured_weight": 0.45,
+              "effective_weight": 0.45,
+              "contribution_points": 0.0
+            },
+            "skill": {
+              "score": 0.0,
+              "available": true,
+              "method": "equal_weight_canonical_coverage",
+              "configured_weight": 0.4,
+              "effective_weight": 0.4,
+              "contribution_points": 0.0
+            },
+            "background": {
+              "score": 0.4,
+              "available": true,
+              "method": "education_industry_proxy",
+              "education_aligned": false,
+              "experience_context": "No experience",
+              "note": "Education is a broad industry proxy, not eligibility. Experience is descriptive only: no comparable career-specific experience requirements are available.",
+              "configured_weight": 0.15,
+              "effective_weight": 0.15,
+              "contribution_points": 6.0
+            }
+          },
+          "explanation": {
+            "summary": "Interest alignment uses industry_fallback across A. Education industry proxy: different field.",
+            "supporting_evidence": [
+              "Interest alignment uses industry_fallback across A.",
+              "Education industry proxy: different field."
+            ],
+            "uncertain_suggestions": [
+              "Industry mapping is a broad proxy, not occupation-specific RIASEC evidence.",
+              "Unreported related skills are opportunities to explore, not proven deficiencies."
+            ],
+            "unavailable_evidence": [
+              "Verified comparable skill proficiency and career-specific experience requirements"
+            ],
+            "score_meaning": "Ranking points from available evidence; not a probability of career success."
+          },
+          "riasec": {
+            "student_scoring_version": "legacy-answers-mean-1-to-5",
+            "bank_version": null,
+            "score": 0.0,
+            "available": true,
+            "method": "industry_fallback",
+            "evidence_quality": "industry_proxy",
+            "dimensions": [
+              "A"
+            ],
+            "dimension_values": {
+              "A": 0.0
+            },
+            "note": "Industry-level interest proxy; a documented reviewed occupation profile was unavailable or unusable."
+          },
+          "skill_alignment": {
+            "score": 0.0,
+            "available": true,
+            "method": "equal_weight_canonical_coverage",
+            "matched_skills": [],
+            "potential_matches": [],
+            "opportunities": [
+              {
+                "skill_id": 4,
+                "name": "Design",
+                "category": "unspecified",
+                "relation_type": "unspecified",
+                "relation_evidence": {},
+                "proficiency_requirement": "unknown",
+                "classification": "not_reported",
+                "suggestion": "Confirm your experience with this skill or explore it; absence from your report is not a deficiency."
+              },
+              {
+                "skill_id": 3,
+                "name": "Writing",
+                "category": "unspecified",
+                "relation_type": "unspecified",
+                "relation_evidence": {},
+                "proficiency_requirement": "unknown",
+                "classification": "not_reported",
+                "suggestion": "Confirm your experience with this skill or explore it; absence from your report is not a deficiency."
+              }
+            ],
+            "verified_proficiency_gaps": [],
+            "related_skill_count": 2,
+            "semantic_status": "disabled",
+            "reports_truncated": false,
+            "note": "Each canonical relation counts once, irrespective of aliases, repetitions or self-rating. No verified comparable proficiency scale is available."
+          }
+        }
+      ],
+      "rank_changes": {
+        "Synthetic Software": 0,
+        "Synthetic Data": 0,
+        "Synthetic Design": 0
+      },
+      "evidence_coverage": {
+        "interest": 3,
+        "skill": 3,
+        "background": 3
+      },
+      "explanation_completeness": {
+        "recommendations": 3,
+        "structured_explanations": 3
+      },
+      "potential_anomalies": [],
+      "missing_data": {
+        "Synthetic Software": [
+          "Verified comparable skill proficiency and career-specific experience requirements"
+        ],
+        "Synthetic Data": [
+          "Verified comparable skill proficiency and career-specific experience requirements"
+        ],
+        "Synthetic Design": [
+          "Verified comparable skill proficiency and career-specific experience requirements"
+        ]
+      }
+    }
+  },
+  "limitations_and_anomalies": [
+    "Synthetic fixtures do not establish accuracy, fairness, employability or real-world relevance.",
+    "All occupation interest evidence in these fixtures is missing; all alignments are industry proxies.",
+    "Flat interests yield neutral scores: deterministic alphabetical ties are not meaningful career differences.",
+    "Legacy repetitions/aliases can alter semantic coverage; v2 counts exact canonical identities only.",
+    "Legacy importance favors first relation; v2 treats all relations equally because weights are unverified.",
+    "Broader genuinely distinct reports can increase coverage; the system cannot verify self-reported possession.",
+    "Semantic proposals are disabled in this comparison; threshold behavior is tested separately with fixed vectors.",
+    "Education is a broad proxy and may favor familiar fields; no real-user subgroup fairness claim is possible."
+  ]
+}
