@@ -1,6 +1,5 @@
 """Invalidate derived user data in the same transaction as its source changes."""
 from recommender.models import CachedRecommendation
-from roadmap.models import RoadmapProgress, SavedRoadmap
 
 from .models import UserResponse
 
@@ -10,6 +9,5 @@ def is_complete(user):
 
 
 def invalidate_derived(user):
+    """Refresh recommendations while preserving user-authored roadmap progress/history."""
     CachedRecommendation.objects.filter(user=user).delete()
-    SavedRoadmap.objects.filter(user=user).delete()
-    RoadmapProgress.objects.filter(user=user).delete()

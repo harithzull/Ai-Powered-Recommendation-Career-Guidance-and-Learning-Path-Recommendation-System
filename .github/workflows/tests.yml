@@ -53,5 +53,7 @@ jobs:
           python manage.py audit_career_data --fail-on-errors
       - name: Run offline tests
         run: python manage.py test --verbosity 2
+      - name: Check the published assessment bank in an isolated in-memory database
+        run: python manage.py shell -c "from django.core.management import call_command; call_command('migrate', verbosity=0); call_command('check_assessment_bank')"
       - name: Check production settings
         run: python scripts/check_deploy.py

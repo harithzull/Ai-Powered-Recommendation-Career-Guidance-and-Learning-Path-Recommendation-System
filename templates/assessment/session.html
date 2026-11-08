@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}Question {{ question_number }} · CareerCoach{% endblock %}
+{% block page_title %}{{ session.get_mode_display }} interest assessment{% endblock %}
+{% block extra_css %}
+.response-options{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;margin:24px 0}
+.response-options label{display:flex;flex-direction:column;align-items:center;gap:10px;padding:16px 8px;border:2px solid var(--line);border-radius:10px;text-align:center;cursor:pointer}
+.response-options label:has(input:checked){border-color:var(--moss);background:var(--paper-2)}
+.response-options input:focus-visible{outline:3px solid var(--moss);outline-offset:4px}
+.assessment-actions{display:flex;flex-wrap:wrap;gap:12px;justify-content:space-between}
+@media(max-width:650px){.response-options{grid-template-columns:1fr}.response-options label{flex-direction:row;text-align:left;padding:12px}}
+{% endblock %}
+{% block content %}
+<p>Question {{ question_number }} of {{ total }} · {{ answered }} answers saved</p>
+<progress value="{{ answered }}" max="{{ total }}" aria-label="Answers saved" style="width:100%">{{ answered }} of {{ total }}</progress>
+{% if error %}<p role="alert" class="a-alert err" style="margin-top:16px">{{ error }}</p>{% endif %}
+<form method="post" class="a-panel" style="padding:24px;margin-top:22px">
+  {% csrf_token %}
+  <input type="hidden" name="position" value="{{ selected.position }}">
+  <input type="hidden" name="item_id" value="{{ selected.pk }}">
+  <input type="hidden" name="revision" value="{{ session.revision }}">
+  <p>How much would you enjoy doing this activity?</p>
+  <fieldset><legend style="font-size:22px;line-height:1.5">{{ selected.text }}</legend>
+    <div class="response-options">
+    {% for value, label in scale %}<label for="rating-{{ value }}"><input id="rating-{{ value }}" type="radio" name="rating" value="{{ value }}" {% if selected.rating == value %}checked{% endif %} required><span>{{ value }} — {{ label }}</span></label>{% endfor %}
+    </div>
+  </fieldset>
+  <div class="assessment-actions">
+    <button type="submit" name="action" value="previous" class="a-btn a-btn-ghost" formnovalidate {% if question_number == 1 %}disabled{% endif %}>Previous</button>
+    <button type="submit" name="action" value="save" class="a-btn a-btn-ghost">Save and exit</button>
+    <button type="submit" name="action" value="next" class="a-btn a-btn-green">{% if question_number == total %}Review answers{% else %}Next{% endif %}</button>
+  </div>
+</form>
+<p style="margin-top:16px;font-size:13px">Next, Previous, or Save and exit saves a selected response. Refresh restores saved answers. You can revise any answer before final submission.</p>
+<a href="{% url 'assessment:review' session.pk %}">Review saved answers</a>
+{% endblock %}

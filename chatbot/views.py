@@ -44,8 +44,13 @@ def _build_system_prompt(user) -> str:
         # RIASEC profile
         scores = riasec_profile(response)
         sorted_scores = sorted(scores.items(), key=lambda x: -x[1])
-        riasec_str = ", ".join(f"{t}={v:.0%}" for t, v in sorted_scores)
-        lines.append(f"RIASEC interest profile (highest first): {riasec_str}")
+        if response.active_session_id:
+            display = response.active_session.result["scores"]
+            riasec_str = ", ".join(f"{t}={display[t]}" for t, _ in sorted_scores)
+            lines.append(f"RIASEC descriptive points out of 100 (not success probabilities): {riasec_str}")
+        else:
+            riasec_str = ", ".join(f"{t}={v * 100:.0f}" for t, v in sorted_scores)
+            lines.append(f"Legacy RIASEC scores (mean/5 on a 0–100 scale, not success probabilities): {riasec_str}")
 
         # Top rated skills
         top_skills = sorted(response.skill_ratings.all(), key=lambda s: -s.rating)[:10]

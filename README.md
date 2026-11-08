@@ -1,6 +1,6 @@
 # CareerCoach
 
-Django career guidance with adaptive RIASEC assessment, semantic career recommendations,
+Django career guidance with versioned, balanced RIASEC assessment, semantic career recommendations,
 skill gaps, personalised roadmaps, progress tracking, and an optional Groq chatbot.
 
 ## Local setup (Windows PowerShell)
@@ -188,13 +188,14 @@ Limits reset at fixed clock boundaries, rather than using a sliding window.
 
 ## Phase 1 behavior changes
 
-- Retake and chat clearing require POST and CSRF tokens. Existing retake buttons retain
-  their appearance and now submit forms; old `?retake=1` links no longer delete data.
-- Interests require valid, distinct questions covering all six types, with at most two
-  per type. Invalid input leaves existing data untouched. At most 30 skills of 100
+- Retake and chat clearing require POST and CSRF tokens. Old `?retake=1` links do not
+  delete data. Phase 2B retakes create new sessions and preserve previous results.
+- Phase 2B replaces the old adaptive submission with balanced, persisted 18/36-item
+  sessions. Invalid input leaves existing data untouched. At most 30 skills of 100
   characters each are accepted, with integer ratings from 1 to 5.
-- Partial assessments do not unlock recommendations or roadmaps. Relevant profile or
-  assessment changes invalidate recommendations, saved roadmaps, and progress.
+- Partial first assessments do not unlock recommendations or roadmaps. Profile and
+  completed assessment changes invalidate recommendation caches. Phase 2B preserves
+  saved roadmaps/progress and labels plans that predate the current assessment.
 - Recommendations are computed lazily after saving; model failures produce a generic
   temporary-unavailability message while preserving the submitted assessment.
 - Opening a new roadmap displays a preparation page that automatically submits a
@@ -203,3 +204,43 @@ Limits reset at fixed clock boundaries, rather than using a sliding window.
   messages. Invalid roadmap output falls back to the existing rule-based plan.
 
 See `docs/phase1-security.md` for the implementation scope and remaining risks.
+
+## Phase 2B: RIASEC Assessment 2.0
+
+Visit `/assessment/start/` after signing in. Quick uses 18 activities (three per
+interest area); Detailed uses 36 (six per area). Both use bank
+`careercoach-riasec-2026.1`, balanced interleaving, and the same five-point enjoyment
+scale. The bank is **not empirically validated**. It explores interests rather than
+measuring ability or guaranteeing career suitability.
+
+Answers save on Next, Previous, or Save and exit. Refresh/resume restores saved
+responses. Final review requires every answer, then freezes the result. Retakes
+create new sessions; history includes snapshots of existing legacy assessments.
+Historical scores with different modes/scorers are not presented as a direct trend.
+The current recommendation weights are unchanged: a raw mean/5 adapter keeps its
+old input scale separate from the new descriptive 0–100 result scale.
+
+```powershell
+python manage.py migrate
+python manage.py check_assessment_bank
+python manage.py test
+```
+
+For revisions, clone a published bank into a new draft, edit its questions through
+Django admin, check coverage, and publish explicitly:
+
+```powershell
+python manage.py clone_question_bank careercoach-riasec-2026.1 your-new-version
+python manage.py check_assessment_bank --bank-version your-new-version
+python manage.py publish_question_bank your-new-version
+```
+
+Existing sessions keep their selected item snapshots and results. The old interest
+submission and adaptive JSON endpoints now return HTTP 410; the old interest page
+redirects to the new start page. Reload any assessment tab opened before this upgrade.
+
+See [architecture](docs/phase2b-architecture.md),
+[scoring and bank management](docs/phase2b-assessment-guide.md),
+[all 36 item facets and legacy review](docs/phase2b-question-bank.md),
+[future validation plan](docs/phase2b-validation-plan.md), and
+[executed checks](docs/phase2b-validation.md).

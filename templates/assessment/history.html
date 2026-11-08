@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}Assessment history · CareerCoach{% endblock %}
+{% block page_title %}Assessment history{% endblock %}
+{% block content %}
+<p>Your previous assessments are retained. Quick, Detailed and legacy scores should not automatically be interpreted as equivalent measures.</p>
+<form method="get">
+<div style="overflow-x:auto"><table class="table"><caption>Private assessment history</caption><thead><tr><th scope="col">First</th><th scope="col">Second</th><th scope="col">Date</th><th scope="col">Mode / status</th><th scope="col">Code</th><th scope="col">Version and result</th></tr></thead><tbody>
+{% for session in page %}<tr><td>{% if session.status == 'completed' %}<input type="radio" name="first" value="{{ session.pk }}" aria-label="Compare {{ session.get_mode_display }} from {{ session.started_at }} as first session" required>{% endif %}</td>
+<td>{% if session.status == 'completed' %}<input type="radio" name="second" value="{{ session.pk }}" aria-label="Compare {{ session.get_mode_display }} from {{ session.started_at }} as second session" required>{% endif %}</td>
+<td>{{ session.completed_at|default:session.started_at|date:"j M Y, H:i" }}</td><td>{{ session.get_mode_display }} / {{ session.get_status_display }}</td>
+<td>{{ session.result.holland_code|default:'Not recorded' }}</td><td>{{ session.scoring_version }}<br>{% if session.status == 'completed' %}<a href="{% url 'assessment:result' session.pk %}">View full result</a>
+<details><summary>Six interest scores</summary><p>R {{ session.result.scores.R|floatformat:1 }} · I {{ session.result.scores.I|floatformat:1 }} · A {{ session.result.scores.A|floatformat:1 }} · S {{ session.result.scores.S|floatformat:1 }} · E {{ session.result.scores.E|floatformat:1 }} · C {{ session.result.scores.C|floatformat:1 }}</p></details>
+{% elif session.status == 'in_progress' %}<a href="{% url 'assessment:session' session.pk %}">Resume</a>{% endif %}</td></tr>
+{% empty %}<tr><td colspan="6">No assessments yet. <a href="{% url 'assessment:start' %}">Explore your interests</a>.</td></tr>{% endfor %}
+</tbody></table></div>
+<button class="a-btn a-btn-ghost" type="submit">Compare selected results</button>
+</form>
+{% if comparison_warning %}<p class="a-alert" role="status" style="margin-top:20px">{{ comparison_warning }}</p>{% endif %}
+{% if comparison %}<h2 style="font-size:20px;margin-top:24px">Same-form comparison</h2><p>The bank, mode, scoring method and selected items match. This does not establish test–retest reliability or prove a meaningful change.</p>
+<table class="table"><caption>Descriptive points out of 100</caption><thead><tr><th>Interest</th><th>{{ comparison.first.completed_at|date:"j M Y, H:i" }}</th><th>{{ comparison.second.completed_at|date:"j M Y, H:i" }}</th></tr></thead><tbody>
+{% for row in comparison.rows %}<tr><th scope="row">{{ row.name }}</th><td>{{ row.first|floatformat:1 }}</td><td>{{ row.second|floatformat:1 }}</td></tr>{% endfor %}</tbody></table>{% endif %}
+<nav aria-label="History pages" style="margin-top:20px">{% if page.has_previous %}<a href="?page={{ page.previous_page_number }}">Previous page</a>{% endif %} Page {{ page.number }} of {{ page.paginator.num_pages }} {% if page.has_next %}<a href="?page={{ page.next_page_number }}">Next page</a>{% endif %}</nav>
+<p style="margin-top:20px"><a href="{% url 'assessment:start' %}">Choose an assessment or retake</a></p>
+{% endblock %}

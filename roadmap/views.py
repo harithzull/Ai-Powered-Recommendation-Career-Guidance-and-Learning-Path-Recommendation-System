@@ -77,4 +77,7 @@ def roadmap(request, career_id):
         "career": career, "roadmap_title": saved.title, "overview": saved.overview,
         "steps_ctx": [{"step": s, "done": s.index in completed} for s in steps],
         "total": total, "done": done, "progress_pct": round(done / total * 100) if total else 0,
+        "older_assessment": bool(getattr(request.user, "assessment_response", None)
+            and request.user.assessment_response.active_session_id
+            and saved.created_at < request.user.assessment_response.active_session.completed_at),
     })

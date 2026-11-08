@@ -5,7 +5,7 @@ from django.test import Client, override_settings
 
 from accounts.models import UserProfile
 from assessment.adaptive import select_next
-from assessment.models import RIASECAnswer, RIASECQuestion, SkillRating, UserResponse
+from assessment.models import RIASECAnswer, RIASECQuestion, SkillRating, UserResponse, AssessmentSession
 from careercoach.test_utils import UserDataTestCase
 from recommender.models import CachedRecommendation
 from roadmap.models import RoadmapProgress, SavedRoadmap
@@ -26,18 +26,17 @@ class AssessmentTests(UserDataTestCase):
         self.assertFalse(CachedRecommendation.objects.filter(user=self.user).exists())
         self.assertTrue(CachedRecommendation.objects.filter(user=self.other).exists())
 
-    def test_interest_submission_resets_completion_skills_and_derived_data(self):
+    def test_retired_interest_submission_preserves_existing_data(self):
         CachedRecommendation.objects.create(user=self.user, results_json="[]")
         SavedRoadmap.objects.create(user=self.user, career=self.career, title="Old", steps_json="[]")
         response = self.client.post("/assessment/interests/", {"answers_json": json.dumps(self.answers())})
-        self.assertRedirects(response, "/assessment/skills/", fetch_redirect_response=False)
+        self.assertEqual(response.status_code, 410)
         stored = UserResponse.objects.get(user=self.user)
-        self.assertIsNone(stored.completed_at)
+        self.assertIsNotNone(stored.completed_at)
         self.assertEqual(stored.riasec_answers.count(), 6)
-        self.assertFalse(stored.skill_ratings.exists())
-        self.assertFalse(CachedRecommendation.objects.filter(user=self.user).exists())
-        self.assertFalse(SavedRoadmap.objects.filter(user=self.user).exists())
-        self.assertIsNotNone(UserResponse.objects.get(user=self.other).completed_at)
+        self.assertTrue(stored.skill_ratings.exists())
+        self.assertTrue(CachedRecommendation.objects.filter(user=self.user).exists())
+        self.assertTrue(SavedRoadmap.objects.filter(user=self.user).exists())
 
     def test_bad_interest_submissions_leave_answers_unchanged(self):
         invalid = [None, {}, [], [self.answers()[0]] * 6, self.answers()[:5],
@@ -47,7 +46,7 @@ class AssessmentTests(UserDataTestCase):
         for payload in invalid:
             with self.subTest(payload=payload):
                 response = self.client.post("/assessment/interests/", {"answers_json": json.dumps(payload)})
-                self.assertRedirects(response, "/assessment/interests/", fetch_redirect_response=False)
+                self.assertEqual(response.status_code, 410)
         self.assertEqual(RIASECAnswer.objects.filter(response__user=self.user).count(), 6)
         self.assertIsNotNone(UserResponse.objects.get(user=self.user).completed_at)
 
@@ -96,14 +95,14 @@ class AssessmentTests(UserDataTestCase):
         session["chatbot_history"] = [{"role": "user", "content": "old"}]
         session.save()
         for path in ["/assessment/background/?retake=1", "/assessment/interests/?retake=1"]:
-            self.assertEqual(self.client.get(path).status_code, 200)
+            self.assertIn(self.client.get(path).status_code, [200, 302])
             self.assertTrue(UserResponse.objects.filter(user=self.user).exists())
         self.assertEqual(self.client.get("/assessment/retake/").status_code, 405)
         self.assertEqual(self.client.post("/assessment/retake/", {"user_id": self.other.pk}).status_code, 302)
         for model in [UserResponse, CachedRecommendation, SavedRoadmap, RoadmapProgress]:
-            self.assertFalse(model.objects.filter(user=self.user).exists())
+            self.assertTrue(model.objects.filter(user=self.user).exists())
             self.assertTrue(model.objects.filter(user=self.other).exists())
-        self.assertNotIn("chatbot_history", self.client.session)
+        self.assertIn("chatbot_history", self.client.session)
 
     def test_partial_assessment_cannot_access_results_or_roadmap(self):
         UserResponse.objects.filter(user=self.user).update(completed_at=None)
@@ -111,39 +110,20 @@ class AssessmentTests(UserDataTestCase):
             with self.subTest(path=path):
                 self.assertEqual(self.client.get(path).status_code, 302)
 
-    def test_background_is_required_before_interests(self):
+    def test_background_can_be_completed_after_interest_exploration(self):
         UserProfile.objects.filter(user=self.user).update(field_of_study="")
-        self.assertRedirects(self.client.get("/assessment/interests/"), "/assessment/background/", fetch_redirect_response=False)
+        self.assertRedirects(self.client.get("/assessment/interests/"), "/assessment/start/", fetch_redirect_response=False)
 
     def test_skills_requires_interest_answers(self):
         RIASECAnswer.objects.filter(response__user=self.user).delete()
         self.assertRedirects(self.client.get("/assessment/skills/"), "/assessment/interests/", fetch_redirect_response=False)
 
-    def test_next_question_rejects_malformed_shapes_and_values(self):
-        payloads = [None, [], 2, {"history": None}, {"history": [None]},
-                    {"history": [{"id": True, "rating": 3}]},
-                    {"history": [{"id": 999999, "rating": 3}]},
-                    {"history": [self.answers()[0], self.answers()[0]]}]
-        for payload in payloads:
-            with self.subTest(payload=payload):
-                response = self.client.post("/assessment/interests/next/", json.dumps(payload), content_type="application/json")
-                self.assertEqual(response.status_code, 400)
-
-    def test_next_question_success_and_method(self):
+    def test_retired_adaptive_endpoint_never_selects_questions(self):
         self.assertEqual(self.client.get("/assessment/interests/next/").status_code, 405)
-        response = self.client.post("/assessment/interests/next/", "{}", content_type="application/json")
-        self.assertEqual(response.status_code, 200)
-        self.assertFalse(response.json()["done"])
-        self.assertIn("text", response.json()["question"])
-
-    def test_invalid_json_and_encoding(self):
-        for payload in [b"{", b"\xff", b"[" * 2000 + b"]" * 2000]:
-            self.assertEqual(self.client.post("/assessment/interests/next/", payload, content_type="application/json").status_code, 400)
-
-    def test_large_request_is_rejected_without_modifying_data(self):
-        response = self.client.post("/assessment/interests/next/", b"x" * (65 * 1024), content_type="application/json")
-        self.assertEqual(response.status_code, 413)
-        self.assertEqual(RIASECAnswer.objects.filter(response__user=self.user).count(), 6)
+        for payload in ["{}", "null", "[]", "{"]:
+            response = self.client.post("/assessment/interests/next/", payload, content_type="application/json")
+            self.assertEqual(response.status_code, 410)
+            self.assertNotIn("question", response.json())
 
     def test_skill_search_and_bounds(self):
         from recommender.models import Skill
@@ -163,7 +143,8 @@ class AssessmentTests(UserDataTestCase):
         client.get("/assessment/background/")
         response = client.post("/assessment/retake/", {}, HTTP_X_CSRFTOKEN=client.cookies["csrftoken"].value)
         self.assertEqual(response.status_code, 302)
-        self.assertFalse(UserResponse.objects.filter(user=self.user).exists())
+        self.assertTrue(UserResponse.objects.filter(user=self.user).exists())
+        self.assertTrue(AssessmentSession.objects.filter(user=self.user, status="in_progress").exists())
 
 
 class AdaptiveTests(UserDataTestCase):

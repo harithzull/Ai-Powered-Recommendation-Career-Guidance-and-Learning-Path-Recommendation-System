@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}Explore your interests · CareerCoach{% endblock %}
+{% block page_title %}Explore your interests{% endblock %}
+{% block extra_css %}
+.interest-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:14px;margin:20px 0}
+.interest-card{padding:18px;border:1px solid var(--line);border-radius:12px;background:#fff}
+.interest-card h2{font-size:16px;margin-bottom:8px}.interest-card p{font-size:14px;color:var(--muted);margin:0}
+.interest-mode{display:block;margin:14px 0;padding:16px;border:1px solid var(--line);border-radius:10px}
+{% endblock %}
+{% block content %}
+<p>RIASEC describes six broad activity-interest areas. Imagine that you could learn what is needed: answer how much you would enjoy each activity, rather than how good you already are at it.</p>
+<div class="a-alert">This CareerCoach assessment explores interests. It does not determine ability, career success or eligibility. This question bank has not yet been empirically validated.</div>
+<div class="interest-grid">
+{% for letter, info in dimensions %}<section class="interest-card"><h2>{{ letter }} — {{ info.0 }}</h2><p>{{ info.1 }}</p></section>{% endfor %}
+</div>
+{% if error %}<p class="a-alert err" role="alert">{{ error }}</p>{% endif %}
+{% if open_session %}
+<section class="a-panel" style="padding:20px">
+  <h2 style="font-size:19px">Your assessment is saved</h2>
+  <p>{{ open_session.get_mode_display }} · started {{ open_session.started_at|date:"j M Y, H:i" }}. Previously saved answers will be restored.</p>
+  <a class="a-btn a-btn-green" href="{% url 'assessment:session' open_session.pk %}">Resume assessment</a>
+  <form method="post" action="{% url 'assessment:abandon' open_session.pk %}" style="margin-top:14px">
+    {% csrf_token %}<input type="hidden" name="revision" value="{{ open_session.revision }}">
+    <button class="a-btn a-btn-ghost" type="submit">Abandon this attempt and choose again</button>
+  </form>
+</section>
+{% elif bank_error %}<p class="a-alert err" role="alert">{{ bank_error }}</p>
+{% else %}
+<form method="post" class="a-panel" style="padding:22px">
+  {% csrf_token %}
+  <fieldset><legend style="font-size:20px">Choose your assessment</legend>
+    <label class="interest-mode"><input type="radio" name="mode" value="quick" checked> <strong>Quick — 18 questions</strong><br>Three activities per interest area. Allow about 4–6 minutes.</label>
+    <label class="interest-mode"><input type="radio" name="mode" value="detailed"> <strong>Detailed — 36 questions</strong><br>Six activities per interest area. Allow about 8–12 minutes.</label>
+  </fieldset>
+  <p style="font-size:13px;color:var(--muted)">Time estimates assume roughly 15–20 seconds per question plus reading time; take longer if you need. Both forms use equal coverage and do not branch based on your answers.</p>
+  <button type="submit" class="a-btn a-btn-green">Start assessment</button>
+  <p style="font-size:12px;margin-top:14px">Question bank {{ bank.version }} · Five responses from Strongly dislike to Strongly enjoy.</p>
+</form>
+{% endif %}
+<p style="margin-top:22px"><a href="{% url 'assessment:history' %}">View assessment history and comparisons</a> · <a href="{% url 'assessment:background' %}">Review background profile</a></p>
+{% endblock %}

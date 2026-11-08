@@ -6,27 +6,13 @@ from django.shortcuts import redirect, render
 from django.views.decorators.http import require_GET, require_POST, require_http_methods
 from django.utils import timezone
 
-from .adaptive import select_next
-from .validation import clean_history, clean_skills, parse_json
+from .validation import clean_skills, parse_json
 from .state import invalidate_derived
 from careercoach.security import rate_limited, serialized_user_work
-from .models import RIASECAnswer, RIASECQuestion, SkillRating, UserResponse
+from .models import SkillRating, UserResponse
 from .suggested_skills import get_suggested_skills
-from recommender.scoring import normalized_riasec
-from recommender.models import Skill
+from recommender.scoring import riasec_profile
 from recommender.aliases import search_skill_names
-
-RATING_OPTIONS = [
-    (1, "1 – Strongly Disagree"),
-    (2, "2 – Disagree"),
-    (3, "3 – Neutral"),
-    (4, "4 – Agree"),
-    (5, "5 – Strongly Agree"),
-]
-
-# ─────────────────────────────────────────────────────────────────────────────
-# PAGE 1 — RIASEC interest questions
-# ─────────────────────────────────────────────────────────────────────────────
 
 @login_required
 @require_http_methods(["GET", "POST"])
@@ -59,84 +45,17 @@ def background(request):
 
 @login_required
 @require_http_methods(["GET", "POST"])
-@rate_limited("assessment", "ASSESSMENT_REQUESTS_PER_MINUTE", 60, by_user=True)
-@serialized_user_work
 def interests(request):
-    """
-    Step 2 of 3: adaptive RIASEC interest walk.
-
-    GET renders a shell; the page drives one question at a time via the
-    ``next_question`` JSON endpoint and finally POSTs the collected answers
-    here as ``answers_json`` = ``[{"id": <qid>, "rating": <1-5>}, ...]``.
-    """
-    # Guard: background (step 1) must be completed before the interest walk.
-    from accounts.models import UserProfile
-    prof, _ = UserProfile.objects.get_or_create(user=request.user)
-    if not prof.is_complete():
-        return redirect("assessment:background")
-
     if request.method == "POST":
-        raw = request.POST.get("answers_json", "[]").strip() or "[]"
-        try:
-            history, valid_questions = clean_history(parse_json(raw), complete=True)
-        except ValueError:
-            messages.error(request, "Your answers were malformed — please try again.")
-            return redirect("assessment:interests")
-
-        cleaned = dict(history)
-
-        with transaction.atomic():
-            response, _ = UserResponse.objects.get_or_create(user=request.user)
-            response.completed_at = None
-            response.save(update_fields=["completed_at", "submitted_at"])
-            SkillRating.objects.filter(response=response).delete()
-            invalidate_derived(request.user)
-            RIASECAnswer.objects.filter(response=response).delete()
-            RIASECAnswer.objects.bulk_create([
-                RIASECAnswer(response=response, question=q, rating=cleaned[qid])
-                for qid, q in valid_questions.items()
-            ])
-
-        return redirect("assessment:skills")
-
-    return render(request, "assessment/interests.html", {
-        "rating_options": RATING_OPTIONS,
-    })
+        return JsonResponse({"error": "Legacy submissions are retired. Start a versioned assessment."}, status=410)
+    return redirect("assessment:start")
 
 
 @login_required
 @require_POST
-@rate_limited("questions", "ASSESSMENT_REQUESTS_PER_MINUTE", 60, by_user=True)
 def next_question(request):
-    """JSON endpoint: given the answer history, return the next question."""
-    try:
-        body = parse_json(request.body.decode("utf-8") or "{}")
-        if not isinstance(body, dict):
-            raise ValueError
-        history, _ = clean_history(body.get("history", []))
-    except (ValueError, UnicodeDecodeError):
-        return JsonResponse({"error": "bad request"}, status=400)
+    return JsonResponse({"error": "The legacy adaptive endpoint is retired. Start a balanced assessment."}, status=410)
 
-    result = select_next(history)
-    if result.done or result.question is None:
-        return JsonResponse({"done": True, "answered": result.answered})
-
-    q = result.question
-    return JsonResponse({
-        "done": False,
-        "answered": result.answered,
-        "target": result.target,
-        "question": {
-            "id":   q.id,
-            "type": q.riasec_type,
-            "text": q.text,
-        },
-    })
-
-
-# ─────────────────────────────────────────────────────────────────────────────
-# PAGE 2 — Adaptive skill pills
-# ─────────────────────────────────────────────────────────────────────────────
 
 @login_required
 @require_http_methods(["GET", "POST"])
@@ -152,16 +71,13 @@ def skills(request):
         response = UserResponse.objects.prefetch_related(
             "riasec_answers__question", "skill_ratings"
         ).get(user=request.user)
-        if not response.riasec_answers.exists():
+        if not response.riasec_answers.exists() and not response.active_session_id:
             return redirect("assessment:interests")
     except UserResponse.DoesNotExist:
         return redirect("assessment:interests")
 
     # Compute RIASEC profile from the already-prefetched answers (no extra query)
-    profile = normalized_riasec(
-        (a.question.riasec_type, a.rating)
-        for a in response.riasec_answers.all()   # uses prefetch cache
-    )
+    profile = riasec_profile(response)
 
     try:
         field_of_study = response.user.profile.field_of_study
@@ -217,7 +133,7 @@ def skills(request):
 # ─────────────────────────────────────────────────────────────────────────────
 
 def quiz(request):
-    return redirect("assessment:background")
+    return redirect("assessment:start")
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -238,10 +154,8 @@ def skill_search(request):
 
 @login_required
 @require_POST
+@rate_limited("interest-start", "ASSESSMENT_REQUESTS_PER_MINUTE", 60, by_user=True)
 @serialized_user_work
 def retake(request):
-    with transaction.atomic():
-        UserResponse.objects.filter(user=request.user).delete()
-        invalidate_derived(request.user)
-        request.session.pop("chatbot_history", None)
-    return redirect("assessment:background")
+    from .v2_views import begin
+    return begin(request)

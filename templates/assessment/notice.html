@@ -1,0 +1,3 @@
+{% extends "base.html" %}
+{% block page_title %}Assessment notice{% endblock %}
+{% block content %}<p class="a-alert err" role="alert">{{ error }}</p><p><a href="{% url 'assessment:start' %}">Return to assessments</a> · <a href="{% url 'assessment:history' %}">View history</a></p>{% endblock %}

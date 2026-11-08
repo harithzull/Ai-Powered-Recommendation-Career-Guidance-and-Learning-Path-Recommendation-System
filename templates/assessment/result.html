@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}Your interest profile · CareerCoach{% endblock %}
+{% block page_title %}Your interest profile{% endblock %}
+{% block content %}
+<p>{{ session.get_mode_display }} · {{ session.completed_at|date:"j M Y, H:i" }} · Scoring {{ session.scoring_version }}{% if session.bank %} · Bank {{ session.bank.version }}{% endif %}</p>
+{% if legacy %}
+<div class="a-alert">This is a preserved legacy assessment. Scores use average rating divided by 5, shown on a 0–100 scale: neutral was 60, not 50. The original agreement wording and uneven coverage differ from the new forms. A Holland Code was not recorded. Do not read these scores as a trend against V2 results.</div>
+{% else %}
+<section class="a-panel" style="padding:24px;margin-bottom:24px">
+  <h2 style="font-size:22px">Holland Code: <span style="letter-spacing:6px">{{ session.result.holland_code }}</span></h2>
+  <p>The letters identify your three highest activity-interest areas in this session.</p>
+  {% if session.result.ties or session.result.near_ties %}<p role="status"><strong>Some dimensions are tied or close.</strong> Exact ties use RIASEC letter order for reproducibility. Differences within five points are flagged for reflection, not as a statistical confidence estimate; the top-three ordering may be less stable.</p>{% endif %}
+  {% if session.result.ties %}<p><strong>Exact ties:</strong> {% for group in session.result.ties %}{{ group|join:', ' }}{% if not forloop.last %}; {% endif %}{% endfor %}.</p>{% endif %}
+  {% if session.result.near_ties %}<p><strong>Close dimensions:</strong> {% for pair in session.result.near_ties %}{{ pair|join:' / ' }}{% if not forloop.last %}; {% endif %}{% endfor %}.</p>{% endif %}
+  {% for row in top_rows %}<p><strong>{{ row.letter }} — {{ row.name }}:</strong> {{ row.description }}</p>{% endfor %}
+</section>
+{% endif %}
+<section class="a-panel" style="padding:24px">
+  <h2 style="font-size:20px">All six interest areas</h2>
+  {% for row in rows %}<div style="margin:18px 0"><label for="score-{{ row.letter }}"><strong>{{ row.name }} — {{ row.score|floatformat:1 }} out of 100</strong> · {{ row.count }} answered</label><br>
+    <meter id="score-{{ row.letter }}" min="0" max="100" value="{{ row.score }}" style="width:100%;height:26px">{{ row.score }} out of 100</meter>
+    <p style="font-size:13px;color:var(--muted);margin:4px 0">{{ row.description }}</p></div>{% endfor %}
+</section>
+<p style="margin-top:22px">{% if not legacy %}The display transformation is ((average − 1) / 4) × 100. Neutral averages map to 50. {% endif %}These are descriptive interest scores, not percentiles, probabilities of success, ability measures, or career eligibility ratings.</p>
+<p>A mixed-interest profile can suggest several activities to explore. Use these results alongside your skills, experiences, and conversations with a career adviser. CareerCoach's new bank has not yet been empirically validated.</p>
+<p style="font-size:13px">Recommendations and skill editing use your current completed profile. Viewing a historical result does not make it active.</p>
+<div class="assessment-actions" style="display:flex;flex-wrap:wrap;gap:12px">
+  <a class="a-btn a-btn-green" href="{% url 'assessment:skills' %}">Review skills for career exploration</a>
+  <a class="a-btn a-btn-ghost" href="{% url 'recommender:results' %}">Career recommendations</a>
+  <a class="a-btn a-btn-ghost" href="{% url 'assessment:history' %}">Assessment history</a>
+  <a class="a-btn a-btn-ghost" href="{% url 'assessment:start' %}">Start a retake</a>
+</div>
+{% endblock %}

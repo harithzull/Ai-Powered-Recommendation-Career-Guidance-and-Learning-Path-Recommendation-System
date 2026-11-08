@@ -40,6 +40,13 @@ def riasec_profile(response: UserResponse) -> dict[str, float]:
     Return a dict mapping each RIASEC type letter to a 0-1 normalized score.
     e.g. {"R": 0.4, "I": 0.9, "A": 0.2, "S": 0.6, "E": 0.3, "C": 0.8}
     """
+    if response.active_session_id:
+        session = response.active_session
+        if session.user_id != response.user_id or session.status != "completed":
+            raise ValueError("Invalid active assessment session.")
+        # Mean/5 preserves the existing recommendation scale. V2 display points
+        # use a different origin and must never be substituted directly.
+        return dict(session.result["compatibility_profile"])
     return normalized_riasec(
         (a.question.riasec_type, a.rating)
         for a in response.riasec_answers.select_related("question").all()

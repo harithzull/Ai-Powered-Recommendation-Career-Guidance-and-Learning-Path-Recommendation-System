@@ -116,7 +116,7 @@ class ProfileTests(UserDataTestCase):
         self.assertEqual(UserProfile.objects.get(user=self.user).field_of_study, "Business")
         self.assertEqual(UserProfile.objects.get(user=self.other).field_of_study, "Computing/IT")
         for model in [CachedRecommendation, SavedRoadmap, RoadmapProgress]:
-            self.assertFalse(model.objects.filter(user=self.user).exists())
+            self.assertEqual(model.objects.filter(user=self.user).exists(), model is not CachedRecommendation)
             self.assertTrue(model.objects.filter(user=self.other).exists())
 
     def test_profile_choice_validation_preserves_previous_values(self):
