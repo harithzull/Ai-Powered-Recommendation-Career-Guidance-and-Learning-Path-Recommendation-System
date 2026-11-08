@@ -1,0 +1,131 @@
+{
+  "synthetic_only": true,
+  "embedding_fixture": "orthonormal four-skill vectors; unknown terms zero",
+  "accuracy_claim": "None. Controlled behavior comparison, not real student outcomes.",
+  "profiles": {
+    "analytic": {
+      "legacy": [
+        {
+          "career": "Synthetic Software",
+          "score": 89.7,
+          "components": {
+            "interest_pct": 80.0,
+            "skill_pct": 100.0,
+            "background_pct": 91.0
+          }
+        },
+        {
+          "career": "Synthetic Data",
+          "score": 85.3,
+          "components": {
+            "interest_pct": 90.0,
+            "skill_pct": 77.8,
+            "background_pct": 91.0
+          }
+        },
+        {
+          "career": "Synthetic Design",
+          "score": 16.4,
+          "components": {
+            "interest_pct": 20.0,
+            "skill_pct": 0.0,
+            "background_pct": 49.0
+          }
+        }
+      ]
+    },
+    "creative": {
+      "legacy": [
+        {
+          "career": "Synthetic Design",
+          "score": 70.1,
+          "components": {
+            "interest_pct": 100.0,
+            "skill_pct": 28.6,
+            "background_pct": 91.0
+          }
+        },
+        {
+          "career": "Synthetic Data",
+          "score": 34.2,
+          "components": {
+            "interest_pct": 40.0,
+            "skill_pct": 22.2,
+            "background_pct": 49.0
+          }
+        },
+        {
+          "career": "Synthetic Software",
+          "score": 20.9,
+          "components": {
+            "interest_pct": 30.0,
+            "skill_pct": 0.0,
+            "background_pct": 49.0
+          }
+        }
+      ]
+    },
+    "flat_missing": {
+      "legacy": [
+        {
+          "career": "Synthetic Data",
+          "score": 34.4,
+          "components": {
+            "interest_pct": 60.0,
+            "skill_pct": 0.0,
+            "background_pct": 49.0
+          }
+        },
+        {
+          "career": "Synthetic Design",
+          "score": 34.4,
+          "components": {
+            "interest_pct": 60.0,
+            "skill_pct": 0.0,
+            "background_pct": 49.0
+          }
+        },
+        {
+          "career": "Synthetic Software",
+          "score": 34.4,
+          "components": {
+            "interest_pct": 60.0,
+            "skill_pct": 0.0,
+            "background_pct": 49.0
+          }
+        }
+      ]
+    },
+    "alias_duplicate": {
+      "legacy": [
+        {
+          "career": "Synthetic Software",
+          "score": 78.2,
+          "components": {
+            "interest_pct": 80.0,
+            "skill_pct": 71.4,
+            "background_pct": 91.0
+          }
+        },
+        {
+          "career": "Synthetic Data",
+          "score": 63.0,
+          "components": {
+            "interest_pct": 90.0,
+            "skill_pct": 22.2,
+            "background_pct": 91.0
+          }
+        },
+        {
+          "career": "Synthetic Design",
+          "score": 16.4,
+          "components": {
+            "interest_pct": 20.0,
+            "skill_pct": 0.0,
+            "background_pct": 49.0
+          }
+        }
+      ]
+    }
+  }
+}

@@ -21,20 +21,24 @@ _NAMES_PATH = (_DATA_DIR / "skill_names.json").resolve()
 # Loaded once per process
 _skill_vectors: np.ndarray | None = None
 _skill_index: dict[str, int] | None = None   # name -> row index
+_store_state = None
 
 
 def _load_store() -> tuple[np.ndarray, dict[str, int]]:
-    global _skill_vectors, _skill_index
-    if _skill_vectors is None:
-        try:
-            _skill_vectors = np.load(_VECTORS_PATH)
+    global _skill_vectors, _skill_index, _store_state
+    try:
+        state = tuple((str(path), path.stat().st_mtime_ns, path.stat().st_size)
+                      for path in (_VECTORS_PATH, _NAMES_PATH))
+        if _skill_vectors is None or _store_state != state:
+            vectors = np.load(_VECTORS_PATH, allow_pickle=False)
             with open(_NAMES_PATH, encoding="utf-8") as f:
                 names = json.load(f)
-            _skill_index = {name: i for i, name in enumerate(names)}
-        except FileNotFoundError as e:
-            raise RuntimeError(
-                "Skill vectors not found. Run: python manage.py build_skill_vectors"
-            ) from e
+            index = {name: i for i, name in enumerate(names)}
+            _skill_vectors, _skill_index, _store_state = vectors, index, state
+    except FileNotFoundError as e:
+        raise RuntimeError(
+            "Skill vectors not found. Run: python manage.py build_skill_vectors"
+        ) from e
     return _skill_vectors, _skill_index
 
 

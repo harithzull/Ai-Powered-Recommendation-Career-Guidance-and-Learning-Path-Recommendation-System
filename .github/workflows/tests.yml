@@ -53,6 +53,12 @@ jobs:
           python manage.py audit_career_data --fail-on-errors
       - name: Run offline tests
         run: python manage.py test --verbosity 2
+      - name: Compare synthetic recommendation rankings without network access
+        run: python scripts/evaluate_recommendations.py --output .cache/phase2c-comparison.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: recommendation-evaluation-python-${{ matrix.python-version }}
+          path: .cache/phase2c-comparison.json
       - name: Check the published assessment bank in an isolated in-memory database
         run: python manage.py shell -c "from django.core.management import call_command; call_command('migrate', verbosity=0); call_command('check_assessment_bank')"
       - name: Check production settings

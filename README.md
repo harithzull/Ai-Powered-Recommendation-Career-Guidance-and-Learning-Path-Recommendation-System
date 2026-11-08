@@ -244,3 +244,28 @@ See [architecture](docs/phase2b-architecture.md),
 [all 36 item facets and legacy review](docs/phase2b-question-bank.md),
 [future validation plan](docs/phase2b-validation-plan.md), and
 [executed checks](docs/phase2b-validation.md).
+
+## Phase 2C: explainable recommendations (opt-in)
+
+The default remains the legacy scorer. Set `RECOMMENDATION_ENGINE=v2` in your
+ignored `.env` and restart Django to review canonical skill matches, evidence
+availability, industry fallback labels and scoring contributions. Leave
+`RECOMMENDATION_SEMANTIC_ENABLED=false` to run v2 without an embedding model.
+The weights remain 45/40/15; changed component definitions are experimental.
+Ranking points are not career-success probabilities.
+
+Back up your database before `python manage.py migrate`. The additive migration
+archives current cached recommendations; all subsequent computations create
+versioned history at `/recommendations/history/`. Existing roadmaps and progress
+are preserved. Switching engines changes current caches, not historical runs.
+
+```powershell
+.venv\Scripts\python.exe -B manage.py migrate
+.venv\Scripts\python.exe -B manage.py test
+.venv\Scripts\python.exe -B scripts/evaluate_recommendations.py --output .cache/phase2c-comparison.json
+```
+
+See [architecture/cache design](docs/phase2c-architecture.md),
+[scoring/evidence rules and activation](docs/phase2c-recommendations.md),
+[synthetic evaluation](docs/phase2c-evaluation.md), and
+[validation](docs/phase2c-validation.md). No empirical accuracy improvement is claimed.

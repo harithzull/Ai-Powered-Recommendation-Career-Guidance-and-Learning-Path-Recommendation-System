@@ -1,4 +1,20 @@
 from django.contrib import admin
+from recommender.models import RecommendationRun
+
+
+@admin.register(RecommendationRun)
+class RecommendationRunAdmin(admin.ModelAdmin):
+    list_display = ('user', 'algorithm_version', 'created_at')
+    readonly_fields = ('user', 'algorithm_version', 'input_signature', 'configuration', 'results_json', 'created_at')
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
 from .models import Career, Skill, CareerSkill, CachedRecommendation, CareerFamily, CareerEnrichment, SkillAlias
 
 

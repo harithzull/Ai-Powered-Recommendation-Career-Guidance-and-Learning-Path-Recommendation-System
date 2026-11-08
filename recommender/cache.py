@@ -1,30 +1,23 @@
-"""
-Recommendation caching layer.
+"""User-scoped lazy cache with content fingerprints and durable run snapshots.
 
-Results from the expensive semantic-matching pipeline are stored as JSON in
-CachedRecommendation (one row per user).  The cache is written immediately
-after any input that affects rankings (quiz submit, profile save) so that
-subsequent page loads read from the DB instead of re-running the pipeline.
-
-Invalidation rules
-  - Assessment Part 1 retake  → delete cache (Part 2 not yet re-submitted)
-  - Assessment Part 2 submit  → compute_and_cache()
-  - Profile save              → compute_and_cache() if assessment is complete
-  - Recommendations page miss → compute_and_cache() (lazy fallback)
+Assessment/profile hooks remove only the disposable cache. Recommendations
+recompute on explicit page access; navigation/chat never trigger computation.
+History and saved roadmaps are independent of cache invalidation.
 """
 from __future__ import annotations
 
 import json
 import types
-import hashlib
 import logging
 from datetime import timedelta
 
 from django.contrib.auth.models import User
-from django.conf import settings
 from django.utils import timezone
+from django.db import transaction
 
-from recommender.models import CachedRecommendation
+from recommender.models import CachedRecommendation, RecommendationRun
+from recommender.engine.config import configuration
+from recommender.engine.fingerprint import input_signature
 from recommender.recommendations import get_recommendations
 from careercoach.security import user_work_lock
 
@@ -36,14 +29,7 @@ class RecommendationUnavailable(Exception):
 
 
 def _signature(user):
-    from assessment.models import UserResponse
-    from accounts.models import UserProfile
-    response = UserResponse.objects.filter(user=user).values("submitted_at", "completed_at", "active_session_id").first()
-    profile = UserProfile.objects.filter(user=user).values("field_of_study", "experience_level").first()
-    payload = {"version": 1, "response": response, "profile": profile,
-               "weights": settings.RECOMMENDATION_WEIGHTS,
-               "threshold": settings.SIMILARITY_THRESHOLD, "model": settings.EMBEDDING_MODEL_PATH}
-    return hashlib.sha256(json.dumps(payload, sort_keys=True, default=str).encode()).hexdigest()
+    return input_signature(user)
 
 
 # ── Serialisation helpers ────────────────────────────────────────────────────
@@ -52,7 +38,7 @@ def _to_json(results: list[dict]) -> str:
     rows = []
     for r in results:
         c = r["career"]
-        rows.append({
+        rows.append({**{key: value for key, value in r.items() if key != 'career'},
             "career_pk":               c.pk,
             "career_title":            c.title,
             "career_industry":         c.industry,
@@ -79,7 +65,8 @@ def _from_json(data: str) -> list[dict]:
             work_environment=row["career_work_environment"],
             summary=row["career_summary"],
         )
-        results.append({
+        results.append({**{key: value for key, value in row.items() if not key.startswith('career_')},
+            'career_id': row.get('career_id', row['career_pk']),
             "career":              career,
             "final_score":         row["final_score"],
             "interest_pct":        row["interest_pct"],
@@ -97,15 +84,24 @@ def _from_json(data: str) -> list[dict]:
 def compute_and_cache(user: User, top_n: int = 5) -> list[dict]:
     """Run the recommendation pipeline, persist the result, and return it."""
     try:
+        signature = _signature(user)
+        config = configuration()
         # Always store at least the five results used by the full results page.
         results = get_recommendations(user, top_n=max(5, top_n))
+        if signature != _signature(user):
+            raise ValueError('Recommendation inputs changed during computation')
+        for row in results:
+            row.setdefault('algorithm_version', config.version)
+            row['input_signature'] = signature
     except (OSError, RuntimeError, ImportError, ValueError) as exc:
         logger.warning("Recommendation computation failed (%s)", type(exc).__name__)
         raise RecommendationUnavailable from exc
-    CachedRecommendation.objects.update_or_create(
-        user=user,
-        defaults={"results_json": _to_json(results), "input_signature": _signature(user)},
-    )
+    data = _to_json(results)
+    with transaction.atomic():
+        run = RecommendationRun.objects.create(user=user, algorithm_version=config.version,
+            input_signature=signature, configuration=config.as_dict(), results_json=data)
+        CachedRecommendation.objects.update_or_create(user=user, defaults={
+            'results_json': data, 'input_signature': signature, 'algorithm_version': config.version, 'run': run})
     return results[:top_n]
 
 

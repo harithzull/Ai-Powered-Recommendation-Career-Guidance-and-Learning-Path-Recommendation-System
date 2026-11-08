@@ -188,3 +188,9 @@ RECOMMENDATION_WEIGHTS = {
     "skill":       0.40,
     "background":  0.15,
 }
+
+# Explicit opt-in until expert/student evaluation supports wider rollout.
+RECOMMENDATION_ENGINE = os.environ.get('RECOMMENDATION_ENGINE', 'legacy').strip()
+RECOMMENDATION_SEMANTIC_ENABLED = os.environ.get('RECOMMENDATION_SEMANTIC_ENABLED', 'false').lower() == 'true'
+RECOMMENDATION_SEMANTIC_THRESHOLD = 0.75  # Retrieval experiment, not calibrated confidence.
+RECOMMENDATION_MODEL_REVISION = os.environ.get('RECOMMENDATION_MODEL_REVISION', 'unrecorded')

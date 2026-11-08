@@ -67,14 +67,18 @@ def _build_system_prompt(user) -> str:
             lines.append("== TOP CAREER RECOMMENDATIONS ==")
             for i, rec in enumerate(recs, 1):
                 lines.append(
-                    f"{i}. {rec['career'].title} — {rec['final_score']}% overall match "
-                    f"(Interest {rec['interest_pct']}%, Skill {rec['skill_pct']}%, Background {rec['background_pct']}%)"
+                    f"{i}. {rec['career'].title} — {rec['final_score']} ranking points, not a success probability "
+                    f"(Interest {rec['interest_pct']}, Skill {rec['skill_pct']}, Background {rec['background_pct']}, each /100)"
                 )
+                if rec.get('explanation'):
+                    lines.append('   ' + rec['explanation']['summary'])
+                    lines.append('   Unavailable: ' + '; '.join(rec['explanation']['unavailable_evidence']))
                 if rec["missing_skills"]:
                     missing = ", ".join(rec["missing_skills"][:6])
-                    lines.append(f"   Core skills to develop: {missing}")
+                    label = 'Related skills to confirm or explore' if rec.get('explanation') else 'Legacy estimated core skills to explore'
+                    lines.append(f"   {label}: {missing}")
                 else:
-                    lines.append("   Core skills: all covered")
+                    lines.append("   No unreported skills listed; this does not verify proficiency")
         else:
             lines.append("Recommendations: not yet generated (assessment may be incomplete)")
 

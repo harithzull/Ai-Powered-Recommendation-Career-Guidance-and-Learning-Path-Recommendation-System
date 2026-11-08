@@ -1,6 +1,7 @@
 from django.contrib.auth.models import User
 from django.db import models
 from django.core.exceptions import ValidationError
+from django.utils import timezone
 
 from .knowledge_validation import (
     validate_localized_titles, validate_metadata, validate_occupation_uri,
@@ -170,7 +171,28 @@ class SkillAlias(models.Model):
         return f"{self.name} -> {self.skill.name} ({self.kind})"
 
 
+class RecommendationRun(models.Model):
+    """Append-only application snapshots; deleting a cache never deletes history."""
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='recommendation_runs')
+    algorithm_version = models.CharField(max_length=80)
+    input_signature = models.CharField(max_length=64, blank=True)
+    configuration = models.JSONField(default=dict)
+    results_json = models.TextField()
+    created_at = models.DateTimeField(default=timezone.now)
+
+    class Meta:
+        ordering = ['-created_at', '-pk']
+        indexes = [models.Index(fields=['user', '-created_at'], name='reco_run_user_created')]
+
+    def save(self, *args, **kwargs):
+        if not self._state.adding:
+            raise ValidationError('Recommendation history is read-only; create a new run.')
+        return super().save(*args, **kwargs)
+
+
 class CachedRecommendation(models.Model):
+    algorithm_version = models.CharField(max_length=80, default='careercoach-legacy-v1')
+    run = models.ForeignKey(RecommendationRun, null=True, blank=True, on_delete=models.SET_NULL, related_name='+')
     input_signature = models.CharField(max_length=64, blank=True, default="")
     user        = models.OneToOneField(User, on_delete=models.CASCADE, related_name="cached_recommendations")
     results_json = models.TextField()

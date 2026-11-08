@@ -13,3 +13,6 @@ PASSWORD_HASHERS = ["django.contrib.auth.hashers.MD5PasswordHasher"]
 GROQ_API_KEY = ""
 EMBEDDING_LOCAL_FILES_ONLY = True
 TEST_RUNNER = "careercoach.testing.OfflineTestRunner"
+RECOMMENDATION_ENGINE = 'legacy'
+RECOMMENDATION_SEMANTIC_ENABLED = False
+RECOMMENDATION_MODEL_REVISION = 'test-only'
