@@ -269,3 +269,19 @@ See [architecture/cache design](docs/phase2c-architecture.md),
 [scoring/evidence rules and activation](docs/phase2c-recommendations.md),
 [synthetic evaluation](docs/phase2c-evaluation.md), and
 [validation](docs/phase2c-validation.md). No empirical accuracy improvement is claimed.
+
+## Synthetic profile evaluation
+
+Run 100 seeded profiles through both real assessment modes and the v2 engine:
+
+```powershell
+python manage.py simulate_profiles --count 100 --mode both --seed 42
+```
+
+This reads the catalog and active bank from the configured SQLite file through a
+read-only connection, then runs **200 assessments** in a separate in-memory process.
+No synthetic records are written to your application database. Network calls and
+semantic proposals are disabled. CSV/JSON/Markdown exports appear in ignored
+`reports/`. Use `--source-db`, `--output-dir`, `--count`, `--mode` and `--seed` for
+other runs. See [safety, methodology and export format](docs/synthetic-profile-evaluation.md)
+and [executed validation](docs/synthetic-profile-validation.md).
