@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}My resumes · CareerCoach{% endblock %}
+{% block page_title %}My resumes{% endblock %}
+{% block content %}
+<p>Private documents and offline text previews. No resume content is sent to AI services or used for recommendations.</p>
+<p><a class="a-btn a-btn-green" href="{% url 'resume:upload' %}">Upload resume</a></p>
+{% for document in page %}
+<div class="card" style="padding:18px;margin-bottom:12px">
+  <a href="{% url 'resume:detail' document.pk %}">{{ document.original_filename }}</a>
+  <p>{{ document.get_status_display }} · {{ document.uploaded_at }} · {{ document.file_size }} bytes</p>
+</div>
+{% empty %}<p>No resumes uploaded.</p>{% endfor %}
+{% if page.has_previous %}<a href="?page={{ page.previous_page_number }}">Previous</a>{% endif %}
+{% if page.has_next %}<a href="?page={{ page.next_page_number }}">Next</a>{% endif %}
+{% endblock %}
