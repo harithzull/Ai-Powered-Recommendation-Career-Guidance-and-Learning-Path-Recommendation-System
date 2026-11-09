@@ -60,15 +60,6 @@ SECURE_REFERRER_POLICY = "same-origin"
 X_FRAME_OPTIONS = "DENY"
 DATA_UPLOAD_MAX_MEMORY_SIZE = 64 * 1024
 DATA_UPLOAD_MAX_NUMBER_FIELDS = 200
-DATA_UPLOAD_MAX_NUMBER_FILES = 1
-FILE_UPLOAD_MAX_MEMORY_SIZE = 6 * 1024 * 1024
-# Keep original resume bytes out of Django's default shared temporary directory.
-FILE_UPLOAD_HANDLERS = ['resume.uploads.BoundedMemoryUploadHandler']
-PRIVATE_RESUME_ROOT = Path(os.environ.get('PRIVATE_RESUME_ROOT', str(BASE_DIR / 'private_storage' / 'resumes')))
-if not PRIVATE_RESUME_ROOT.is_absolute():
-    PRIVATE_RESUME_ROOT = BASE_DIR / PRIVATE_RESUME_ROOT
-RESUME_UPLOADS_PER_DAY = 10
-RESUME_MAX_DOCUMENTS = 10
 
 # Shared database counters work across WSGI/ASGI workers without a new service.
 # Expired counters are removed by the cleanup_security_counters command.
@@ -101,7 +92,6 @@ INSTALLED_APPS = [
     'roadmap',
     'dashboard',
     'chatbot',
-    'resume',
 ]
 
 MIDDLEWARE = [
