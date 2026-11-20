@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}Correct suggestion · CareerCoach{% endblock %}
+{% block page_title %}Correct resume suggestion{% endblock %}
+{% block content %}
+{% with item=suggestion %}
+<h3>{{ item.value }}</h3>
+{% include "resume/analysis_evidence.html" %}
+{% if item.alternatives %}
+<ul aria-label="Catalog candidates">{% for skill in item.alternatives %}
+<li>{{ skill.name }} (ID {{ skill.id }})</li>
+{% endfor %}</ul>
+{% endif %}
+<form method="post" action="{% url 'resume:analysis_review' item.analysis.document_id item.analysis_id item.pk %}">
+  {% csrf_token %}
+  {{ form.as_p }}
+  <button type="submit" class="a-btn">Save correction</button>
+  <a href="{% url 'resume:analysis_detail' item.analysis.document_id item.analysis_id %}">Cancel</a>
+</form>
+{% endwith %}
+{% endblock %}

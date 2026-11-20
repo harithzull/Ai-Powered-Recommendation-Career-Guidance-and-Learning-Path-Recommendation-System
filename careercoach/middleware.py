@@ -10,7 +10,13 @@ class ServiceErrorMiddleware:
         self.get_response = get_response
 
     def __call__(self, request):
-        return self.get_response(request)
+        response = self.get_response(request)
+        match = getattr(request, 'resolver_match', None)
+        if match and match.namespace == 'resume' and match.url_name.startswith('analysis_'):
+            # Also cover responses produced before the view, such as CSRF failures.
+            from resume.views import private_response
+            return private_response(response)
+        return response
 
     def process_exception(self, request, exception):
         from recommender.cache import RecommendationUnavailable

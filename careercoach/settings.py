@@ -69,6 +69,8 @@ if not PRIVATE_RESUME_ROOT.is_absolute():
     PRIVATE_RESUME_ROOT = BASE_DIR / PRIVATE_RESUME_ROOT
 RESUME_UPLOADS_PER_DAY = 10
 RESUME_MAX_DOCUMENTS = 10
+RESUME_ANALYSES_PER_DAY = env_int('RESUME_ANALYSES_PER_DAY', 10, 1)
+RESUME_REVIEWS_PER_MINUTE = env_int('RESUME_REVIEWS_PER_MINUTE', 30, 1)
 
 # Shared database counters work across WSGI/ASGI workers without a new service.
 # Expired counters are removed by the cleanup_security_counters command.
