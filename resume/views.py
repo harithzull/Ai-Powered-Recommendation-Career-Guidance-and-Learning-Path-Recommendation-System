@@ -16,7 +16,8 @@ from .storage import ResumeStorageError, private_storage
 
 def private_response(response):
     response['Cache-Control'] = 'private, no-store'
-    response['Referrer-Policy'] = 'no-referrer'
+    # Native form submissions need an origin that Django can validate.
+    response['Referrer-Policy'] = 'same-origin'
     response['X-Content-Type-Options'] = 'nosniff'
     response.setdefault('Content-Security-Policy', "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; form-action 'self'; frame-ancestors 'none'; base-uri 'none'")
     return response

@@ -290,8 +290,8 @@ and [executed validation](docs/synthetic-profile-validation.md).
 
 Sign in and open `/resumes/` to upload a PDF/DOCX (5 MiB maximum) with consent,
 view an offline text preview, download the original as an attachment or delete
-the file and its private text. There is no OCR, AI processing, skill extraction,
-scoring or recommendation integration. Resume pages load no external CDN assets.
+the file and its private text. Use a document with selectable text. Resume pages
+load no external CDN assets.
 
 ```powershell
 python -m pip install -r requirements.lock
@@ -305,3 +305,16 @@ Private originals default to ignored `private_storage/resumes/`. Configure
 cleanup. Parsing runs in a resource-bounded subprocess; file validation is not a
 malware guarantee. See [architecture, controls, setup, limits and validation](docs/phase3a-resume-upload.md)
 before deploying. Backups require their own documented retention policy.
+
+## Phase 3B · Resume intelligence
+
+Run `python manage.py migrate`, then open an extracted resume and select
+**Analyze and review resume**. Inspect the evidence and confirm, reject, or
+correct each skill, education, work, or project suggestion. New analyses keep
+earlier reviews accessible through **Analysis history**.
+
+Analysis uses the local Phase 2A catalog. On a fresh local database, run
+`python manage.py import_data` and `python manage.py seed_career_enrichment`.
+Run `python manage.py test resume.test_intelligence` for the feature tests and
+`python scripts/evaluate_resume_intelligence.py` for the isolated 30-resume
+evaluation. See [the Phase 3B guide](docs/phase3b-resume-intelligence.md).

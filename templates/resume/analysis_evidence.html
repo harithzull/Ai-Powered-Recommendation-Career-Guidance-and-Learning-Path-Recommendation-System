@@ -1,0 +1,10 @@
+<details>
+<summary>Resume evidence</summary>
+<ul>{% for span in item.evidence %}
+<li>
+<p>{{ span.section|capfirst }} · characters {{ span.start }}–{{ span.end }}{% if span.match_method %} · {{ span.match_method }}{% endif %}</p>
+<blockquote style="white-space:pre-wrap;overflow-wrap:anywhere">{{ span.excerpt }}</blockquote>
+{% if span.context and span.context != span.excerpt %}<p>{{ span.context }}</p>{% endif %}
+</li>
+{% endfor %}</ul>
+</details>

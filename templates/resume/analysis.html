@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+{% block title %}Resume analysis · CareerCoach{% endblock %}
+{% block page_title %}Resume analysis{% endblock %}
+{% block content %}
+<h3>{{ document.original_filename }}</h3>
+<p><a href="{% url 'resume:detail' document.pk %}">Back to resume</a></p>
+{% if analysis %}
+<h4>Analysis {{ analysis.revision }} · {{ analysis.extractor_version }}</h4>
+<p>Created {{ analysis.created_at }}.</p>
+{% if stale %}<p role="status">The source has changed. This analysis is read-only.</p>{% endif %}
+{% for notice in analysis.notices %}<p role="status">{{ notice }}</p>{% endfor %}
+{% if analysis.sections %}
+<details><summary>Detected sections</summary>
+<ul>{% for section in analysis.sections %}
+<li>{{ section.label|default:"Unclassified text" }} (characters {{ section.start }}–{{ section.end }})</li>
+{% endfor %}</ul>
+</details>
+{% endif %}
+{% else %}
+<p>Analyze the extracted text to find skills, education, work experience, and projects. Review suggestions before relying on them.</p>
+{% endif %}
+{% if ready %}
+  {% if latest %}
+  <details><summary>Run a new analysis</summary>
+  <form method="post" action="{% url 'resume:analysis_run' document.pk %}">
+    {% csrf_token %}
+    <input type="hidden" name="latest" value="{{ latest.pk }}">
+    <label><input type="checkbox" name="rerun" value="true" required> Create a new revision and keep the earlier reviews in history.</label>
+    <button class="a-btn" type="submit">Analyze again</button>
+  </form>
+  {% if new_extractor %}<p>A newer extractor is available. Run a new analysis to use it.</p>{% endif %}
+  </details>
+  {% else %}
+  <form method="post" action="{% url 'resume:analysis_run' document.pk %}">
+    {% csrf_token %}<button class="a-btn" type="submit">Analyze resume</button>
+  </form>
+  {% endif %}
+{% else %}
+<p>Analysis requires successfully extracted resume text.</p>
+{% endif %}
+{% if history %}
+<details><summary>Analysis history</summary>
+<ul>{% for revision in history %}
+<li><a href="{% url 'resume:analysis_detail' document.pk revision.pk %}">Analysis {{ revision.revision }} · {{ revision.extractor_version }} · {{ revision.created_at }}</a></li>
+{% endfor %}</ul>
+</details>
+{% endif %}
+{% if analysis and not groups %}<p>No suggestions were found in this analysis.</p>{% endif %}
+{% for category, rows in groups.items %}
+<section>
+<h4>{{ category }}</h4>
+{% for row in rows %}
+{% with item=row.item %}
+<article>
+<h5>{{ item.value }}</h5>
+<p>{{ item.get_support_display }} · {{ item.get_review_state_display }}</p>
+{% if item.canonical_snapshot %}
+<p>Catalog match: {{ item.canonical_snapshot.name }} (ID {{ item.canonical_snapshot.id }}). {{ item.method }}.</p>
+<p>Source: {{ item.canonical_snapshot.taxonomy }}{% if item.canonical_snapshot.source.source_version %} · {{ item.canonical_snapshot.source.source_version }}{% endif %}{% if item.canonical_snapshot.esco_uri %} · {{ item.canonical_snapshot.esco_uri }}{% endif %}{% if item.canonical_snapshot.alias %} · Alias: {{ item.canonical_snapshot.alias }}{% endif %}.</p>
+{% elif item.category == 'skill' and item.support != 'unsupported' %}
+<p>Mapping status: {{ item.method }}.</p>
+{% endif %}
+{% if item.alternatives %}
+<ul aria-label="Catalog candidates">{% for skill in item.alternatives %}
+<li>{{ skill.name }} (ID {{ skill.id }})</li>
+{% endfor %}</ul>
+{% endif %}
+{% if row.fields %}<dl>{% for label, value in row.fields %}<dt>{{ label }}</dt><dd>{{ value }}</dd>{% endfor %}</dl>{% endif %}
+{% if item.correction %}
+<h6>Your correction</h6>
+{% if item.correction.value %}<p>{{ item.correction.value }}{% if item.correction.canonical %} · {{ item.correction.canonical.name }} (ID {{ item.correction.canonical.id }}){% endif %}</p>{% endif %}
+{% if row.corrections %}<dl>{% for label, value in row.corrections %}<dt>{{ label }}</dt><dd>{{ value }}</dd>{% endfor %}</dl>{% endif %}
+{% endif %}
+{% include "resume/analysis_evidence.html" %}
+{% if not stale %}
+<form method="post" action="{% url 'resume:analysis_review' document.pk analysis.pk item.pk %}">
+  {% csrf_token %}
+  <input type="hidden" name="review_version" value="{{ item.review_version }}">
+  {% if item.can_confirm and item.review_state != 'corrected' %}<button type="submit" class="a-btn" name="decision" value="confirmed">Confirm extraction</button>{% endif %}
+  <button type="submit" class="a-btn a-btn-ghost" name="decision" value="rejected">Reject</button>
+  <a href="{% url 'resume:analysis_correct' document.pk analysis.pk item.pk %}">Correct</a>
+</form>
+{% endif %}
+</article>
+{% endwith %}
+{% endfor %}
+</section>
+{% endfor %}
+{% endblock %}

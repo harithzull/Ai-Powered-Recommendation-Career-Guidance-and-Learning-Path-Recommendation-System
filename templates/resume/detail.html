@@ -12,6 +12,7 @@
 <h4>Private text preview</h4>
 <p>Reading order may differ for columns, tables and graphical layouts. Preview limited to 12,000 characters.</p>
 <pre style="white-space:pre-wrap;overflow-wrap:anywhere">{{ document.extracted_text|truncatechars:12000 }}</pre>
+{% if document.status == 'completed' %}<p><a class="a-btn" href="{% url 'resume:analysis_index' document.pk %}">Analyze and review resume</a></p>{% endif %}
 {% endif %}
 {% if document.file_retained %}<a class="a-btn a-btn-ghost" href="{% url 'resume:download' document.pk %}">Download original as attachment</a>{% endif %}
 <a class="a-btn a-btn-ghost" href="{% url 'resume:confirm_delete' document.pk %}">Delete resume</a>

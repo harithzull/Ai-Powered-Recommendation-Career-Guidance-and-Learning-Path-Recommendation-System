@@ -13,7 +13,9 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.core.management import call_command
 from django.db import DatabaseError
 from django.test import Client, SimpleTestCase, TestCase, override_settings
+from django.urls import reverse
 from django.utils import timezone
+from recommender.models import Skill
 
 from .checks import private_resume_storage
 from .constants import MAX_FILE_BYTES
@@ -185,6 +187,23 @@ class ResumeViewsTests(TestCase):
         self.assertNotContains(response, 'fonts.googleapis.com')
         self.assertIn("connect-src 'self'", response['Content-Security-Policy'])
 
+    def test_uploaded_docx_can_be_analyzed_and_reviewed(self):
+        python = Skill.objects.create(name='Python')
+        self.assertEqual(self.upload(docx('Technical Skills: Python'), 'resume.docx').status_code, 302)
+        document = ResumeDocument.objects.get()
+        analysis_index = reverse('resume:analysis_index', args=[document.pk])
+        self.assertContains(self.client.get(reverse('resume:detail', args=[document.pk])), analysis_index)
+        response = self.client.post(reverse('resume:analysis_run', args=[document.pk]), follow=True)
+        self.assertContains(response, 'Catalog match: Python')
+        analysis = document.analyses.get()
+        item = analysis.suggestions.get(canonical_skill=python)
+        self.assertEqual(len(item.evidence), 2)
+        response = self.client.post(reverse('resume:analysis_review', args=[document.pk, analysis.pk, item.pk]),
+                                    {'decision': 'confirmed', 'review_version': 0}, follow=True)
+        self.assertContains(response, 'Confirmed')
+        item.refresh_from_db()
+        self.assertEqual(item.review_state, 'confirmed')
+
     def test_no_text_pdf_record_and_message(self):
         self.assertEqual(self.upload(pdf(text=None)).status_code, 302)
         document = ResumeDocument.objects.get()
@@ -216,6 +235,7 @@ class ResumeViewsTests(TestCase):
         document = self.create()
         client = Client(enforce_csrf_checks=True)
         client.force_login(self.user)
+        self.assertEqual(client.get('/resumes/upload/')['Referrer-Policy'], 'same-origin')
         self.assertEqual(client.post('/resumes/upload/', {'consent': 'on'}).status_code, 403)
         self.assertEqual(client.post(f'/resumes/{document.pk}/delete/').status_code, 403)
         self.assertTrue(ResumeDocument.objects.filter(pk=document.pk).exists())
