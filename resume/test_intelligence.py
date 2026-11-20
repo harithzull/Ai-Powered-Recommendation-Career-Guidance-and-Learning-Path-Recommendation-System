@@ -407,16 +407,21 @@ class ReviewTests(TestCase):
         item = analysis.suggestions.first()
         browser = Client(enforce_csrf_checks=True)
         browser.force_login(self.owner)
-        for response in (browser.get(self.url('detail', None, analysis.pk)), browser.post(self.url('run')),
+        for response in (browser.get(self.url('index')),
+                         browser.get(self.url('detail', None, analysis.pk)),
+                         browser.get(self.url('correct', None, analysis.pk, item.pk)),
+                         browser.post(self.url('run')),
                          browser.post(self.url('review', None, analysis.pk, item.pk), {'decision': 'confirmed'})):
             self.assertEqual(response['Cache-Control'], 'private, no-store')
-            self.assertEqual(response['Referrer-Policy'], 'no-referrer')
+            self.assertEqual(response['Referrer-Policy'], 'same-origin')
             self.assertIn("connect-src 'self'", response['Content-Security-Policy'])
         self.assertEqual(browser.post(self.url('run')).status_code, 403)
         self.assertEqual(browser.post(self.url('review', None, analysis.pk, item.pk)).status_code, 403)
         token = browser.cookies['csrftoken'].value
-        self.assertEqual(browser.post(self.url('review', None, analysis.pk, item.pk),
-            {'decision': 'confirmed', 'review_version': item.review_version, 'csrfmiddlewaretoken': token}).status_code, 302)
+        payload = {'decision': 'confirmed', 'review_version': item.review_version, 'csrfmiddlewaretoken': token}
+        review_url = self.url('review', None, analysis.pk, item.pk)
+        self.assertEqual(browser.post(review_url, payload, secure=True, HTTP_ORIGIN='null').status_code, 403)
+        self.assertEqual(browser.post(review_url, payload, secure=True, HTTP_ORIGIN='https://testserver').status_code, 302)
 
     @override_settings(RESUME_ANALYSES_PER_DAY=1, RESUME_REVIEWS_PER_MINUTE=1)
     def test_analysis_and_review_limits_and_retry_headers(self):

@@ -235,6 +235,7 @@ class ResumeViewsTests(TestCase):
         document = self.create()
         client = Client(enforce_csrf_checks=True)
         client.force_login(self.user)
+        self.assertEqual(client.get('/resumes/upload/')['Referrer-Policy'], 'same-origin')
         self.assertEqual(client.post('/resumes/upload/', {'consent': 'on'}).status_code, 403)
         self.assertEqual(client.post(f'/resumes/{document.pk}/delete/').status_code, 403)
         self.assertTrue(ResumeDocument.objects.filter(pk=document.pk).exists())

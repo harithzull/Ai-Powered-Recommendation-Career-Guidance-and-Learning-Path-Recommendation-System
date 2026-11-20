@@ -60,7 +60,7 @@ Paths are relative to `/resumes/`. All queries scope both the document and neste
 | GET | `<resume>/analysis/<analysis>/<suggestion>/correct/` | Open the correction form |
 | POST | `<resume>/analysis/<analysis>/<suggestion>/review/` | Confirm, reject, or correct |
 
-State changes require CSRF validation. Responses use `Cache-Control: private, no-store`, a no-referrer policy, and Phase 3A’s content security policy. Templates escape the evidence and user corrections. There is no analysis admin registration, evidence export, LLM integration, or network dependency. Expected processing failures return generic messages.
+State changes require CSRF validation. Responses use `Cache-Control: private, no-store`, same-origin referrers, and Phase 3A’s content security policy. Templates escape the evidence and user corrections. There is no analysis admin registration, evidence export, LLM integration, or network dependency. Expected processing failures return generic messages.
 
 The existing shared rate counters and per-user work lease cover analysis and review. `RESUME_ANALYSES_PER_DAY` defaults to 10 and `RESUME_REVIEWS_PER_MINUTE` defaults to 30. Limits are 200,000 extracted characters, 120 sections, 2,000 characters per line for skill scanning, 240 characters per structured evidence line, 30,000 catalog and alias records, 60 skill suggestions, 12 entries per structured category, and 20 revisions per resume. Each skill keeps up to six evidence occurrences. A five-second cooperative budget limits extraction work. Database wait time is governed by the deployment separately.
 

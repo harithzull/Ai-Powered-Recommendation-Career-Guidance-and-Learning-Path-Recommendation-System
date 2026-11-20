@@ -133,7 +133,7 @@ database text fields and originals are sensitive personal data.
 Disable full-memory crash dumps and document-body/local-variable capture for
 parser processes and upload routes in the deployment's monitoring configuration.
 
-Private pages use `private, no-store`, no-referrer, nosniff and a same-origin CSP.
+Private pages use `private, no-store`, same-origin referrers, nosniff and a same-origin CSP.
 They retain base inline styling/navigation while excluding external CDN assets,
 including Bootstrap JS and Google fonts. The CSP retains inline scripts/styles
 for existing base UI behavior; a nonce policy can accompany the future UI redesign.
