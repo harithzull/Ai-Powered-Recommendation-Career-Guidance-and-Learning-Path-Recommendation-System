@@ -22,6 +22,7 @@ db.sqlite3.*
 
 staticfiles/
 media/
+private_storage/
 
 # Regenerable synthetic evaluation exports; observed findings live in docs.
 /reports/

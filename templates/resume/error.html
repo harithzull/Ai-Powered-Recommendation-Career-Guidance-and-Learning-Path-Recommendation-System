@@ -1,0 +1,3 @@
+{% extends "base.html" %}
+{% block page_title %}Resume request unavailable{% endblock %}
+{% block content %}<p role="alert">{{ message }}</p><a href="{% url 'resume:index' %}">My resumes</a>{% endblock %}

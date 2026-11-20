@@ -1,5 +1,5 @@
 from django.http import HttpResponse
-from django.core.exceptions import RequestDataTooBig, TooManyFieldsSent
+from django.core.exceptions import RequestDataTooBig, TooManyFieldsSent, TooManyFilesSent
 
 from .security import WorkInProgress
 
@@ -20,5 +20,5 @@ class ServiceErrorMiddleware:
             response = HttpResponse("Another request is being processed. Please try again.", status=409)
             response["Retry-After"] = "5"
             return response
-        if isinstance(exception, (RequestDataTooBig, TooManyFieldsSent)):
+        if isinstance(exception, (RequestDataTooBig, TooManyFieldsSent, TooManyFilesSent)):
             return HttpResponse("The submitted request is too large.", status=413)

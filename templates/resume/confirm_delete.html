@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block page_title %}Delete resume{% endblock %}
+{% block content %}
+<p>Delete {{ document.original_filename }} and its extracted text from active application storage? This does not delete copies in backups or files you downloaded.</p>
+<form method="post" action="{% url 'resume:delete' document.pk %}">
+{% csrf_token %}<button type="submit" class="a-btn a-btn-green">Delete resume</button>
+<a class="a-btn a-btn-ghost" href="{% url 'resume:detail' document.pk %}">Cancel</a>
+</form>
+{% endblock %}
