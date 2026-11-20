@@ -4,13 +4,11 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>{% block title %}CareerCoach FYP{% endblock %}</title>
-  {% if request.resolver_match.app_name != 'resume' %}
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet" />
-  {% endif %}
   <style>
     /* ── FYP design tokens ──────────────────────────────── */
     :root {
@@ -222,7 +220,6 @@
       My Profile
     </a>
 
-    <a class="nav-item {% if app == 'resume' %}active{% endif %}" href="{% url 'resume:index' %}">My resumes</a>
     <div class="nav-lbl">Talk it through</div>
     <a class="nav-item {% if app == 'chatbot' %}active{% endif %}" href="/chat/">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 5h16v11H8l-4 4z"/></svg>
@@ -292,9 +289,7 @@
   This service uses the <a href="https://esco.ec.europa.eu/en">ESCO classification</a> of the European Commission.
   CareerCoach uses an adapted subset with its own classifications and enrichment; source version unknown.
 </div>
-{% if request.resolver_match.app_name != 'resume' %}
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-{% endif %}
 <script>
 (function () {
   var side = document.getElementById('side');

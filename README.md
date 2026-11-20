@@ -285,23 +285,3 @@ semantic proposals are disabled. CSV/JSON/Markdown exports appear in ignored
 `reports/`. Use `--source-db`, `--output-dir`, `--count`, `--mode` and `--seed` for
 other runs. See [safety, methodology and export format](docs/synthetic-profile-evaluation.md)
 and [executed validation](docs/synthetic-profile-validation.md).
-
-## Phase 3A: private resume uploads
-
-Sign in and open `/resumes/` to upload a PDF/DOCX (5 MiB maximum) with consent,
-view an offline text preview, download the original as an attachment or delete
-the file and its private text. There is no OCR, AI processing, skill extraction,
-scoring or recommendation integration. Resume pages load no external CDN assets.
-
-```powershell
-python -m pip install -r requirements.lock
-python manage.py migrate
-python manage.py test resume
-python manage.py cleanup_resume_uploads
-```
-
-Private originals default to ignored `private_storage/resumes/`. Configure
-`PRIVATE_RESUME_ROOT` outside the web server's public roots and schedule stale-upload
-cleanup. Parsing runs in a resource-bounded subprocess; file validation is not a
-malware guarantee. See [architecture, controls, setup, limits and validation](docs/phase3a-resume-upload.md)
-before deploying. Backups require their own documented retention policy.
